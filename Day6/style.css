@@ -1,0 +1,36 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 0 20px;
+  color: #333;
+}
+
+nav {
+  padding: 12px;
+  background: #e8f0fe;
+}
+
+nav a {
+  margin-right: 15px;
+}
+
+.course {
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+}
+
+input,
+select,
+button {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  padding: 8px;
+  margin: 6px 0 12px;
+}
+
+button {
+  width: auto;
+}

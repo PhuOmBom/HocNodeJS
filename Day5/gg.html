@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bắt lợn ching chong</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #87ceeb;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* YouTube Hidden Player */
+        #youtube-player-container {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* HUD Layer */
+        .hud-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px 24px;
+            z-index: 20;
+        }
+
+        .top-hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .hud-card {
+            background: rgba(255, 255, 255, 0.88);
+            border: 2px solid #de2910;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 12px;
+            color: #222;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            pointer-events: auto;
+        }
+
+        .hud-card .label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #777;
+        }
+
+        .hud-card .value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #de2910;
+        }
+
+        .combo-badge {
+            font-size: 28px;
+            font-weight: 900;
+            color: #de2910;
+            text-shadow: 2px 2px 0 #ffde59, -2px -2px 0 #fff;
+            transform: scale(1);
+            transition: transform 0.1s ease;
+        }
+
+        /* Boss Health Bar & Countdown */
+        .boss-bar-container {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 82%;
+            max-width: 620px;
+            background: rgba(0,0,0,0.85);
+            border: 3px solid #ffde59;
+            border-radius: 20px;
+            padding: 8px 14px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 25;
+            box-shadow: 0 0 30px rgba(222,41,16,0.9);
+        }
+
+        .boss-bar-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            color: #ffde59;
+            font-weight: 900;
+            font-size: 14px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .boss-bar-bg {
+            width: 100%;
+            height: 18px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .boss-bar-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff2a5f, #de2910);
+            transition: width 0.05s linear;
+        }
+
+        /* Bottom Controls */
+        .bottom-hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #de2910, #ff5238);
+            border: 2px solid #ffde59;
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 900;
+            box-shadow: 0 6px 15px rgba(222, 41, 16, 0.4);
+            transition: all 0.15s ease;
+            pointer-events: auto;
+            font-size: 15px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 20px rgba(222, 41, 16, 0.6);
+        }
+
+        .weapon-badge {
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid #ffde59;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 900;
+            color: #de2910;
+            font-size: 13px;
+        }
+
+        /* Modal Shop */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border: 3px solid #de2910;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 24px;
+            color: #333;
+            width: 92%;
+            max-width: 520px;
+            z-index: 9999 !important;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            pointer-events: auto !important;
+        }
+
+        .modal.active {
+            display: flex !important;
+        }
+
+        .modal h2 {
+            font-size: 24px;
+            text-align: center;
+            color: #de2910;
+            letter-spacing: 1px;
+        }
+
+        .shop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .shop-item.owned {
+            background: #e6ffed;
+            border-color: #52c41a;
+        }
+
+        .shop-item-info h4 {
+            color: #1a202c;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .shop-item-info p {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .buy-btn {
+            background: #de2910;
+            border: none;
+            color: #fff;
+            padding: 9px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .buy-btn:hover:not(:disabled) {
+            background: #b71c0c;
+            transform: scale(1.05);
+        }
+
+        .buy-btn:disabled {
+            background: #cbd5e1;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .close-modal {
+            background: #de2910;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        /* Thư gửi gái Khuê */
+        .letter-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 580px;
+            background: #fffdf7;
+            border: 4px solid #de2910;
+            box-shadow: 0 0 50px rgba(222,41,16,0.6);
+            border-radius: 20px;
+            padding: 32px 28px;
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .letter-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #2c1810;
+            font-style: italic;
+            background: #fff5e6;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #de2910;
+        }
+
+        /* Overlay Screens */
+        .overlay-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.94);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .overlay-screen h1 {
+            font-size: 46px;
+            color: #de2910;
+            text-shadow: 2px 2px 0 #ffde59;
+            margin-bottom: 28px;
+            letter-spacing: 2px;
+        }
+
+        .btn-large {
+            background: linear-gradient(45deg, #de2910, #ffde59);
+            border: none;
+            color: #000;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 16px 48px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(222, 41, 16, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-large:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(222, 41, 16, 0.6);
+        }
+
+        .audio-ctrl {
+            cursor: pointer;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.15s;
+        }
+
+        .audio-ctrl:hover {
+            background: #e2e8f0;
+            transform: scale(1.1);
+        }
+
+        @keyframes popIn {
+            from { transform: translate(-50%, -45%) scale(0.85); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- YouTube Audio Player Embed -->
+        <div id="youtube-player-container">
+            <iframe id="yt-audio" width="200" height="200" 
+                src="https://www.youtube.com/embed/ojcq6e60b3c?enablejsapi=1&autoplay=0&loop=1&playlist=ojcq6e60b3c" 
+                frameborder="0" allow="autoplay">
+            </iframe>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Thanh máu Boss & Thời gian 30s -->
+        <div class="boss-bar-container" id="boss-hud">
+            <div class="boss-bar-header">
+                <span>⚠️ TRÙM CUỐI: LỢN ĐEN KHỔNG LỒ</span>
+                <span id="boss-timer-text">30.0s</span>
+            </div>
+            <div class="boss-bar-bg">
+                <div class="boss-bar-fill" id="boss-hp-fill"></div>
+            </div>
+        </div>
+
+        <!-- HUD Layer -->
+        <div class="hud-layer">
+            <div class="top-hud">
+                <div class="hud-card">
+                    <div>
+                        <div class="label">Vàng</div>
+                        <div class="value" id="coin-display">💰 0</div>
+                    </div>
+                </div>
+
+                <div class="combo-badge" id="combo-display"></div>
+
+                <div class="hud-card">
+                    <div>
+                        <div class="label">Điểm Số</div>
+                        <div class="value" id="score-display">0</div>
+                    </div>
+                    <button class="audio-ctrl" id="btn-toggle-sound" title="Bật/Tắt Âm Thanh">🔊</button>
+                </div>
+            </div>
+
+            <div class="bottom-hud">
+                <div class="weapon-badge" id="weapon-display">
+                    Trang bị: Dây Thừng (1 ST)
+                </div>
+                <div style="pointer-events: auto;">
+                    <button class="action-btn" id="btn-open-shop">🛒 VŨ KHÍ & MÁY BẮT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="overlay-screen" id="start-screen">
+            <h1>Bắt lợn ching chong</h1>
+            <button class="btn-large" id="btn-start">BẮT ĐẦU CHƠI</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="overlay-screen" id="gameover-screen" style="display: none;">
+            <h1 style="color: #de2910;">BẠN ĐÃ ĐỂ TRÙM THOÁT!</h1>
+            <button class="btn-large" id="btn-restart">THỬ LẠI</button>
+        </div>
+
+        <!-- Shop Modal -->
+        <div class="modal" id="shop-modal">
+            <h2>★ CỬA HÀNG VŨ KHÍ ★</h2>
+            <div class="shop-list" id="shop-items-container"></div>
+            <button class="close-modal" id="btn-close-shop">QUAY LẠI TRẬN ĐẤU</button>
+        </div>
+
+        <!-- Thư gửi gái Khuê -->
+        <div class="letter-modal" id="letter-modal">
+            <h2 style="color: #de2910; text-align: center;">🏆 Chúc mừng cu! 🏆</h2>
+            <div class="letter-content">
+                "Gửi gái Khuê, t mong m sẽ có một cuộc sống đại học thật tuyệt vời, mong cho m có sức khỏe siêu tốt, mong cho m gặp đc những người bạn mới tuyệt vời bên TQ, t biết sẽ có những lúc khó khăn và gian nan, nhưng nếu là m thì t tin là m sẽ vượt qua những trắc trở đó. Tạm biệt và hẹn ngày gặp lại nha cu. Thỉnh thoảng nhắn cho t vài câu nhé, t dễ quên người lắm🥀🥀🥀"
+            </div>
+            <button class="close-modal" id="btn-close-letter" style="background: #de2910;">ĐÃ ĐỌC VÀ LƯU GIỮ ❤️</button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           1. SFX & YOUTUBE AUDIO ENGINE
+           ========================================================================== */
+        class SFXEngine {
+            constructor() {
+                this.ctx = null;
+                this.isMuted = false;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            playHit() {
+                if (!this.ctx || this.isMuted) return;
+                const osc = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(360, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.08);
+                g.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(g); g.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.08);
+            }
+            playCoin() {
+                if (!this.ctx || this.isMuted) return;
+                const osc = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(1318, this.ctx.currentTime + 0.08);
+                g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                osc.connect(g); g.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.22);
+            }
+            playOink() {
+                if (!this.ctx || this.isMuted) return;
+                const osc = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(320, this.ctx.currentTime + 0.06);
+                osc.frequency.linearRampToValueAtTime(120, this.ctx.currentTime + 0.15);
+                g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(g); g.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.15);
+            }
+            playBossExplode() {
+                if (!this.ctx || this.isMuted) return;
+                const osc = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(90, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(20, this.ctx.currentTime + 1.2);
+                g.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 1.2);
+                osc.connect(g); g.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 1.2);
+            }
+        }
+        const sfx = new SFXEngine();
+
+        let isSoundActive = true;
+        const ytIframe = document.getElementById('yt-audio');
+
+        function sendYtCommand(funcName, args = []) {
+            if (ytIframe && ytIframe.contentWindow) {
+                ytIframe.contentWindow.postMessage(JSON.stringify({
+                    "event": "command",
+                    "func": funcName,
+                    "args": args
+                }), "*");
+            }
+        }
+
+        /* ==========================================================================
+           2. BỐI CẢNH BAN NGÀY TƯƠI SÁNG
+           ========================================================================== */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initCityBuildings();
+        });
+
+        let buildingsFar = [];
+        let buildingsMid = [];
+        let clouds = [];
+
+        function initCityBuildings() {
+            buildingsFar = [];
+            buildingsMid = [];
+            clouds = [];
+
+            for (let i = 0; i < 7; i++) {
+                clouds.push({
+                    x: Math.random() * width,
+                    y: 20 + Math.random() * (height * 0.25),
+                    speed: 0.12 + Math.random() * 0.18,
+                    radius: 35 + Math.random() * 40
+                });
+            }
+
+            const farCount = 18;
+            const farW = width / (farCount - 2);
+            for (let i = 0; i < farCount; i++) {
+                buildingsFar.push({
+                    x: i * farW,
+                    w: farW + 5,
+                    h: height * 0.35 + Math.random() * (height * 0.35),
+                    color: `hsl(210, 45%, ${75 + Math.random() * 12}%)`
+                });
+            }
+
+            const midCount = 11;
+            const midW = width / (midCount - 1);
+            for (let i = 0; i < midCount; i++) {
+                const bH = height * 0.25 + Math.random() * (height * 0.32);
+                buildingsMid.push({
+                    x: i * midW,
+                    w: midW + 8,
+                    h: bH,
+                    color: `hsl(215, 55%, ${55 + Math.random() * 15}%)`,
+                    windowColor: 'rgba(255, 255, 255, 0.75)'
+                });
+            }
+        }
+        initCityBuildings();
+
+        /* ==========================================================================
+           3. HỆ THỐNG VŨ KHÍ & TIẾN TRÌNH
+           ========================================================================== */
+        const WEAPONS = [
+            { id: 'w1', name: 'Dây Thừng', dmg: 1, cost: 0, desc: 'Vũ khí săn heo cơ bản' },
+            { id: 'w2', name: 'Phóng Lợn', dmg: 4, cost: 69, desc: 'Đâm xuyên cực mạnh (+4 ST)' },
+            { id: 'w3', name: 'Súng Phóng Lao', dmg: 12, cost: 186, desc: 'Bắn lao tốc độ cao (+12 ST)' },
+            { id: 'w4', name: 'Móc Diệt Thủy Quái', dmg: 35, cost: 670, desc: 'Kéo sập mọi mục tiêu (+35 ST)' },
+            { id: 'w5', name: 'Mẹ Mày', dmg: 60, cost: 1869, desc: 'Sức mạnh tối thượng! Kích hoạt Boss (+60 ST)' }
+        ];
+
+        let currentWeaponTier = 0;
+        let autoLauncherLevel = 0;
+        const autoLauncherCosts = [18, 36, 67, 69, 136, 269, 369];
+
+        /* ==========================================================================
+           4. ĐỊNH NGHĨA LOÀI HEO & BOSS CHẠY ĐÚNG 30S
+           ========================================================================== */
+        const PIG_SPECS = {
+            NORMAL:       { name: 'Thường', hp: 1, reward: 10, score: 100, color: '#ff99bb', earColor: '#f078a0', scale: 1.0, speedMul: 0.8 },
+            FAT:          { name: 'Béo', hp: 3, reward: 30, score: 300, color: '#ff6f91', earColor: '#d64d70', scale: 1.4, speedMul: 0.65 },
+            GOLD:         { name: 'Vàng', hp: 5, reward: 75, score: 750, color: '#ffd700', earColor: '#e6a100', scale: 1.15, speedMul: 1.08 },
+            DIAMOND:      { name: 'Kim Cương', hp: 10, reward: 200, score: 2000, color: '#70f0ff', earColor: '#00bfff', scale: 1.25, speedMul: 1.28 },
+            DARK_WARRIOR: { name: 'Thiết Giáp Đen', hp: 20, reward: 120, score: 1200, color: '#4a4e69', earColor: '#22223b', scale: 1.6, speedMul: 0.6 },
+            TITAN_DARK:   { name: 'Titan Hắc Ám', hp: 50, reward: 350, score: 3500, color: '#2b2d42', earColor: '#111', scale: 1.9, speedMul: 0.52 }
+        };
+
+        class Pig {
+            constructor(typeKey, isBoss = false) {
+                this.isBoss = isBoss;
+                if (isBoss) {
+                    this.typeKey = 'BOSS';
+                    this.maxHp = 50 * WEAPONS[4].dmg;
+                    this.hp = this.maxHp;
+                    this.reward = 9999;
+                    this.score = 99999;
+                    this.color = '#111115';
+                    this.earColor = '#000000';
+                    this.radius = Math.min(width, height) * 0.25;
+
+                    this.bossTotalDuration = 30.0;
+                    this.bossElapsed = 0.0;
+                    this.startX = -this.radius * 1.5;
+                    this.endX = width + this.radius * 1.5;
+                    this.x = this.startX;
+                    this.y = height * 0.5;
+                    this.groundY = this.y;
+                } else {
+                    const spec = PIG_SPECS[typeKey];
+                    this.typeKey = typeKey;
+                    this.maxHp = spec.hp;
+                    this.hp = this.maxHp;
+                    this.reward = spec.reward;
+                    this.score = spec.score;
+                    this.color = spec.color;
+                    this.earColor = spec.earColor;
+                    this.radius = 28 * spec.scale;
+
+                    this.fromLeft = Math.random() > 0.5;
+                    this.x = this.fromLeft ? -this.radius * 2 : width + this.radius * 2;
+                    this.y = height - 110 - Math.random() * (height * 0.42);
+                    this.groundY = this.y;
+
+                    const baseSpeed = (1.8 + Math.random() * 2.0) * spec.speedMul;
+                    this.vx = this.fromLeft ? baseSpeed : -baseSpeed;
+                    this.vy = 0;
+                    this.jumpTimer = Math.random() * 100;
+                }
+
+                this.hitAnim = 0;
+                this.dead = false;
+            }
+
+            update(dt) {
+                if (!this.isBoss) {
+                    this.x += this.vx * (dt * 60);
+
+                    this.jumpTimer += 1 * (dt * 60);
+                    if (this.jumpTimer > 120 && this.y >= this.groundY) {
+                        this.vy = -(5 + Math.random() * 5);
+                        this.jumpTimer = 0;
+                    }
+
+                    this.y += this.vy * (dt * 60);
+                    if (this.y < this.groundY) {
+                        this.vy += 0.28 * (dt * 60);
+                    } else {
+                        this.y = this.groundY;
+                        this.vy = 0;
+                    }
+
+                    if ((this.fromLeft && this.x > width + 120) || (!this.fromLeft && this.x < -120)) {
+                        this.dead = true;
+                    }
+                } else {
+                    this.bossElapsed += dt;
+                    const progress = Math.min(1.0, this.bossElapsed / this.bossTotalDuration);
+                    
+                    this.x = this.startX + (this.endX - this.startX) * progress;
+                    this.y = this.groundY + Math.sin(this.bossElapsed * 3) * 15;
+
+                    const timeLeft = Math.max(0, this.bossTotalDuration - this.bossElapsed);
+                    document.getElementById('boss-timer-text').textContent = `${timeLeft.toFixed(1)}s`;
+
+                    const fillPercent = Math.max(0, (this.hp / this.maxHp) * 100);
+                    document.getElementById('boss-hp-fill').style.width = `${fillPercent}%`;
+
+                    if (this.bossElapsed >= this.bossTotalDuration) {
+                        triggerGameOver();
+                    }
+                }
+
+                if (this.hitAnim > 0) this.hitAnim -= 0.1;
+            }
+
+            takeDamage(dmg) {
+                this.hp -= dmg;
+                this.hitAnim = 1;
+                sfx.playHit();
+                if (this.hp <= 0) {
+                    this.hp = 0;
+                    this.dead = true;
+                    if (this.isBoss) {
+                        sfx.playBossExplode();
+                    } else {
+                        sfx.playOink();
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                if (this.vx < 0 && !this.isBoss) ctx.scale(-1, 1);
+                if (this.hitAnim > 0) ctx.filter = `brightness(${1 + this.hitAnim * 1.8})`;
+
+                const r = this.radius;
+
+                if (this.isBoss) {
+                    ctx.shadowColor = '#de2910';
+                    ctx.shadowBlur = 35;
+                } else if (this.typeKey === 'DIAMOND') {
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.shadowBlur = 15;
+                } else if (this.typeKey === 'GOLD') {
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 15;
+                }
+
+                // Thân Heo
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, r * 1.15, r * 0.95, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.lineWidth = this.isBoss ? 8 : 3;
+                ctx.strokeStyle = this.isBoss ? '#de2910' : '#1b1b22';
+                ctx.stroke();
+
+                // Tai
+                ctx.fillStyle = this.earColor;
+                ctx.beginPath();
+                ctx.moveTo(-r * 0.5, -r * 0.7);
+                ctx.lineTo(-r * 0.2, -r * 1.25);
+                ctx.lineTo(0, -r * 0.7);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(r * 0.2, -r * 0.7);
+                ctx.lineTo(r * 0.5, -r * 1.25);
+                ctx.lineTo(r * 0.7, -r * 0.7);
+                ctx.fill();
+                ctx.stroke();
+
+                // Mắt
+                ctx.fillStyle = this.isBoss ? '#ff0033' : '#000';
+                ctx.beginPath();
+                ctx.arc(r * 0.35, -r * 0.2, r * 0.12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(r * 0.38, -r * 0.23, r * 0.04, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mõm
+                ctx.fillStyle = this.earColor;
+                ctx.beginPath();
+                ctx.ellipse(r * 0.65, 0, r * 0.35, r * 0.25, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = this.isBoss ? '#ff0033' : '#333';
+                ctx.beginPath();
+                ctx.arc(r * 0.55, 0, r * 0.06, 0, Math.PI * 2);
+                ctx.arc(r * 0.75, 0, r * 0.06, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cờ trên cổ
+                ctx.save();
+                ctx.translate(-r * 0.35, r * 0.35);
+                ctx.rotate(0.15);
+                ctx.fillStyle = '#de2910';
+                ctx.fillRect(0, 0, r * 0.75, r * 0.48);
+                ctx.strokeStyle = '#ffde59';
+                ctx.lineWidth = this.isBoss ? 3 : 1;
+                ctx.strokeRect(0, 0, r * 0.75, r * 0.48);
+
+                ctx.fillStyle = '#ffde59';
+                drawMiniStar(ctx, r * 0.18, r * 0.18, r * 0.085, 5);
+                drawMiniStar(ctx, r * 0.36, r * 0.10, r * 0.03, 5);
+                drawMiniStar(ctx, r * 0.44, r * 0.18, r * 0.03, 5);
+                drawMiniStar(ctx, r * 0.44, r * 0.28, r * 0.03, 5);
+                drawMiniStar(ctx, r * 0.36, r * 0.36, r * 0.03, 5);
+                ctx.restore();
+
+                // Thanh máu lợn nhỏ
+                if (this.maxHp > 1 && !this.isBoss) {
+                    const barW = r * 1.6;
+                    const barH = 5;
+                    const barX = -barW / 2;
+                    const barY = -r * 1.35;
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(barX, barY, barW, barH);
+                    const hpPercent = Math.max(0, this.hp / this.maxHp);
+                    ctx.fillStyle = hpPercent > 0.5 ? '#00ff66' : hpPercent > 0.25 ? '#ffd700' : '#ff2a5f';
+                    ctx.fillRect(barX, barY, barW * hpPercent, barH);
+                }
+
+                ctx.restore();
+            }
+
+            isClicked(mx, my) {
+                return Math.hypot(mx - this.x, my - this.y) <= this.radius * 1.35;
+            }
+        }
+
+        function drawMiniStar(ctx, cx, cy, r, points) {
+            ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+                const angle = (i * Math.PI) / points - Math.PI / 2;
+                const radius = i % 2 === 0 ? r : r * 0.45;
+                const x = cx + Math.cos(angle) * radius;
+                const y = cy + Math.sin(angle) * radius;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        /* ==========================================================================
+           5. PARTICLES & FLOATING TEXT
+           ========================================================================== */
+        class Particle {
+            constructor(x, y, color, sizeMul = 1) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = (2 + Math.random() * 4) * sizeMul;
+                const speed = (2 + Math.random() * 6) * sizeMul;
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.decay = 0.02 + Math.random() * 0.03;
+            }
+            update(dt) {
+                this.x += this.vx * (dt * 60);
+                this.y += this.vy * (dt * 60);
+                this.vy += 0.12 * (dt * 60);
+                this.alpha -= this.decay * (dt * 60);
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class FloatingText {
+            constructor(text, x, y, color = '#de2910', size = 20) {
+                this.text = text;
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = size;
+                this.alpha = 1;
+                this.vy = -2;
+            }
+            update(dt) {
+                this.y += this.vy * (dt * 60);
+                this.alpha -= 0.025 * (dt * 60);
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.font = `900 ${this.size}px 'Segoe UI', Arial`;
+                ctx.fillStyle = this.color;
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 4;
+                ctx.strokeText(this.text, this.x, this.y);
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        /* ==========================================================================
+           6. GAME STATE & VÒNG LẶP
+           ========================================================================== */
+        const gameState = {
+            coins: 0,
+            score: 0,
+            combo: 0,
+            comboTimer: 0,
+            pigs: [],
+            particles: [],
+            floatingTexts: [],
+            running: false,
+            isShopOpen: false,
+            bossActive: false,
+            bossInstance: null
+        };
+
+        const coinDisplay = document.getElementById('coin-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const comboDisplay = document.getElementById('combo-display');
+        const weaponDisplay = document.getElementById('weapon-display');
+        const bossHud = document.getElementById('boss-hud');
+        const shopModal = document.getElementById('shop-modal');
+        const shopItemsContainer = document.getElementById('shop-items-container');
+        const letterModal = document.getElementById('letter-modal');
+
+        function updateHUD() {
+            coinDisplay.textContent = `💰 ${gameState.coins}`;
+            scoreDisplay.textContent = gameState.score;
+            weaponDisplay.textContent = `Trang bị: ${WEAPONS[currentWeaponTier].name} (${WEAPONS[currentWeaponTier].dmg} ST)`;
+
+            if (gameState.combo > 1) {
+                comboDisplay.textContent = `COMBO x${gameState.combo}!`;
+                comboDisplay.style.transform = 'scale(1.2)';
+                setTimeout(() => comboDisplay.style.transform = 'scale(1)', 100);
+            } else {
+                comboDisplay.textContent = '';
+            }
+        }
+
+        function renderShop() {
+            shopItemsContainer.innerHTML = '';
+
+            WEAPONS.forEach((w, idx) => {
+                const isOwned = idx <= currentWeaponTier;
+                const isNext = idx === currentWeaponTier + 1;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `shop-item ${isOwned ? 'owned' : ''}`;
+                itemDiv.innerHTML = `
+                    <div class="shop-item-info">
+                        <h4>${w.name} ${isOwned ? '✓ (Đang dùng)' : ''}</h4>
+                        <p>${w.desc}</p>
+                    </div>
+                    <button class="buy-btn" data-type="weapon" data-idx="${idx}" 
+                        ${isOwned || !isNext || gameState.coins < w.cost ? 'disabled' : ''}>
+                        ${isOwned ? 'Đã sở hữu' : `${w.cost} 💰`}
+                    </button>
+                `;
+                shopItemsContainer.appendChild(itemDiv);
+            });
+
+            const nextAutoCost = autoLauncherCosts[Math.min(autoLauncherLevel, autoLauncherCosts.length - 1)];
+            const autoDiv = document.createElement('div');
+            autoDiv.className = 'shop-item';
+            autoDiv.innerHTML = `
+                <div class="shop-item-info">
+                    <h4>🤖 Máy Phóng Tự Động (Cấp ${autoLauncherLevel})</h4>
+                    <p>Tự động bắt lợn liên tục trên đường phố</p>
+                </div>
+                <button class="buy-btn" data-type="auto" ${gameState.coins < nextAutoCost ? 'disabled' : ''}>
+                    ${nextAutoCost} 💰
+                </button>
+            `;
+            shopItemsContainer.appendChild(autoDiv);
+
+            shopItemsContainer.querySelectorAll('.buy-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const type = btn.getAttribute('data-type');
+                    if (type === 'weapon') {
+                        const idx = parseInt(btn.getAttribute('data-idx'));
+                        const w = WEAPONS[idx];
+                        if (gameState.coins >= w.cost) {
+                            gameState.coins -= w.cost;
+                            currentWeaponTier = idx;
+                            sfx.playCoin();
+                            updateHUD();
+                            renderShop();
+
+                            if (idx === 4) {
+                                closeShop();
+                                spawnBoss();
+                            }
+                        }
+                    } else if (type === 'auto') {
+                        const cost = autoLauncherCosts[Math.min(autoLauncherLevel, autoLauncherCosts.length - 1)];
+                        if (gameState.coins >= cost) {
+                            gameState.coins -= cost;
+                            autoLauncherLevel++;
+                            sfx.playCoin();
+                            updateHUD();
+                            renderShop();
+                        }
+                    }
+                };
+            });
+        }
+
+        function openShop() {
+            gameState.isShopOpen = true;
+            renderShop();
+            shopModal.classList.add('active');
+        }
+
+        function closeShop() {
+            gameState.isShopOpen = false;
+            shopModal.classList.remove('active');
+        }
+
+        let spawnTimer = 0;
+        function spawnPigLogic() {
+            if (gameState.bossActive) return;
+
+            spawnTimer++;
+            if (spawnTimer > 45) {
+                spawnTimer = 0;
+                const rand = Math.random() * 100;
+
+                let type = 'NORMAL';
+                if (currentWeaponTier >= 3 && rand < 10) {
+                    type = 'TITAN_DARK';
+                } else if (currentWeaponTier >= 2 && rand < 22) {
+                    type = 'DARK_WARRIOR';
+                } else if (rand < 35) {
+                    type = 'FAT';
+                } else if (rand < 50) {
+                    type = 'GOLD';
+                } else if (rand < 62) {
+                    type = 'DIAMOND';
+                }
+                gameState.pigs.push(new Pig(type));
+            }
+        }
+
+        function spawnBoss() {
+            gameState.bossActive = true;
+            gameState.pigs = [];
+            gameState.bossInstance = new Pig('BOSS', true);
+            gameState.pigs.push(gameState.bossInstance);
+            bossHud.style.display = 'flex';
+        }
+
+        let autoTimer = 0;
+        function autoLauncherLogic() {
+            if (autoLauncherLevel <= 0) return;
+            autoTimer++;
+            if (autoTimer > Math.max(20, 90 - autoLauncherLevel * 10)) {
+                autoTimer = 0;
+                const alive = gameState.pigs.filter(p => !p.dead);
+                if (alive.length > 0) {
+                    const target = alive[Math.floor(Math.random() * alive.length)];
+                    hitPig(target, 2 + autoLauncherLevel * 2, target.x, target.y);
+                    gameState.floatingTexts.push(new FloatingText("🤖 AUTO", target.x, target.y - 20, '#de2910', 16));
+                }
+            }
+        }
+
+        function hitPig(pig, damage, clickX, clickY) {
+            const isDead = pig.takeDamage(damage);
+
+            for (let i = 0; i < (pig.isBoss ? 15 : 6); i++) {
+                gameState.particles.push(new Particle(clickX, clickY, pig.isBoss ? '#de2910' : pig.color, pig.isBoss ? 2 : 1));
+            }
+
+            gameState.floatingTexts.push(new FloatingText(`-${damage}`, clickX, clickY - 10, '#de2910', pig.isBoss ? 28 : 18));
+
+            if (isDead) {
+                gameState.combo++;
+                gameState.comboTimer = 150;
+
+                gameState.coins += pig.reward;
+                gameState.score += pig.score;
+                sfx.playCoin();
+
+                if (pig.isBoss) {
+                    gameState.bossActive = false;
+                    bossHud.style.display = 'none';
+                    for (let i = 0; i < 150; i++) {
+                        gameState.particles.push(new Particle(width * Math.random(), height * Math.random(), '#ffde59', 3));
+                        gameState.particles.push(new Particle(width * Math.random(), height * Math.random(), '#de2910', 3));
+                    }
+                    setTimeout(() => {
+                        letterModal.style.display = 'flex';
+                    }, 1000);
+                } else {
+                    for (let i = 0; i < 15; i++) {
+                        gameState.particles.push(new Particle(pig.x, pig.y, '#ffd700'));
+                    }
+                    gameState.floatingTexts.push(new FloatingText(`+${pig.reward} 💰`, pig.x, pig.y - 35, '#ffd700', 22));
+                }
+            }
+            updateHUD();
+        }
+
+        function triggerGameOver() {
+            gameState.running = false;
+            bossHud.style.display = 'none';
+            document.getElementById('gameover-screen').style.display = 'flex';
+        }
+
+        /* ==========================================================================
+           7. SỰ KIỆN CLICK & ĐIỀU KHIỂN
+           ========================================================================== */
+        function handleClick(e) {
+            if (!gameState.running || gameState.isShopOpen) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - rect.left;
+            const y = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - rect.top;
+
+            let hit = false;
+            for (let i = gameState.pigs.length - 1; i >= 0; i--) {
+                const pig = gameState.pigs[i];
+                if (!pig.dead && pig.isClicked(x, y)) {
+                    hitPig(pig, WEAPONS[currentWeaponTier].dmg, x, y);
+                    hit = true;
+                    break;
+                }
+            }
+
+            if (!hit) {
+                for (let i = 0; i < 3; i++) {
+                    gameState.particles.push(new Particle(x, y, '#de2910'));
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleClick);
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameState.isShopOpen) {
+                e.preventDefault();
+                handleClick(e);
+            }
+        }, { passive: false });
+
+        document.getElementById('btn-open-shop').onclick = (e) => {
+            e.stopPropagation();
+            openShop();
+        };
+
+        document.getElementById('btn-close-shop').onclick = (e) => {
+            e.stopPropagation();
+            closeShop();
+        };
+
+        // BẬT / TẮT TIẾNG HOÀN TOÀN
+        const btnToggleSound = document.getElementById('btn-toggle-sound');
+        btnToggleSound.onclick = (e) => {
+            e.stopPropagation();
+            isSoundActive = !isSoundActive;
+            sfx.isMuted = !isSoundActive;
+
+            if (isSoundActive) {
+                sendYtCommand('unMute');
+                sendYtCommand('playVideo');
+                btnToggleSound.textContent = '🔊';
+            } else {
+                sendYtCommand('mute');
+                sendYtCommand('pauseVideo');
+                btnToggleSound.textContent = '🔇';
+            }
+        };
+
+        document.getElementById('btn-start').onclick = () => {
+            sfx.init();
+            sendYtCommand('unMute');
+            sendYtCommand('playVideo');
+            document.getElementById('start-screen').style.display = 'none';
+            gameState.running = true;
+            updateHUD();
+        };
+
+        document.getElementById('btn-restart').onclick = () => {
+            document.getElementById('gameover-screen').style.display = 'none';
+            gameState.pigs = [];
+            gameState.bossActive = false;
+            gameState.running = true;
+            if (currentWeaponTier === 4) spawnBoss();
+        };
+
+        document.getElementById('btn-close-letter').onclick = () => {
+            letterModal.style.display = 'none';
+            gameState.running = true;
+        };
+
+        /* ==========================================================================
+           8. RENDER BỐI CẢNH BAN NGÀY & VÒNG LẶP CHÍNH
+           ========================================================================== */
+        function drawDaySky() {
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+            skyGrad.addColorStop(0, '#5bb8f8');
+            skyGrad.addColorStop(0.5, '#a3dbff');
+            skyGrad.addColorStop(1, '#e3f3ff');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.save();
+            const sunGrad = ctx.createRadialGradient(width * 0.78, height * 0.22, 10, width * 0.78, height * 0.22, 120);
+            sunGrad.addColorStop(0, 'rgba(255, 240, 150, 0.9)');
+            sunGrad.addColorStop(0.4, 'rgba(255, 200, 50, 0.4)');
+            sunGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = sunGrad;
+            ctx.beginPath();
+            ctx.arc(width * 0.78, height * 0.22, 120, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+            clouds.forEach(c => {
+                c.x += c.speed;
+                if (c.x > width + 100) c.x = -100;
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+                ctx.arc(c.x + 30, c.y - 8, c.radius * 0.8, 0, Math.PI * 2);
+                ctx.arc(c.x - 25, c.y + 5, c.radius * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            buildingsFar.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, height - b.h, b.w, b.h);
+            });
+
+            buildingsMid.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, height - b.h, b.w, b.h);
+                ctx.fillStyle = b.windowColor;
+                for (let r = height - b.h + 20; r < height - 50; r += 26) {
+                    for (let c = b.x + 10; c < b.x + b.w - 12; c += 18) {
+                        ctx.fillRect(c, r, 9, 14);
+                    }
+                }
+            });
+
+            const roadH = 85;
+            ctx.fillStyle = '#4a5568';
+            ctx.fillRect(0, height - roadH, width, roadH);
+
+            ctx.strokeStyle = '#ffde59';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([30, 25]);
+            ctx.beginPath();
+            ctx.moveTo(0, height - roadH / 2);
+            ctx.lineTo(width, height - roadH / 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        let lastTime = performance.now();
+
+        function gameLoop(currentTime) {
+            const dt = Math.min(0.1, (currentTime - lastTime) / 1000);
+            lastTime = currentTime;
+
+            ctx.clearRect(0, 0, width, height);
+            drawDaySky();
+
+            if (gameState.running && !gameState.isShopOpen) {
+                if (gameState.comboTimer > 0) {
+                    gameState.comboTimer -= 1 * (dt * 60);
+                    if (gameState.comboTimer <= 0) {
+                        gameState.combo = 0;
+                        updateHUD();
+                    }
+                }
+
+                spawnPigLogic();
+                autoLauncherLogic();
+
+                for (let i = gameState.pigs.length - 1; i >= 0; i--) {
+                    const pig = gameState.pigs[i];
+                    pig.update(dt);
+                    pig.draw(ctx);
+                    if (pig.dead) gameState.pigs.splice(i, 1);
+                }
+
+                for (let i = gameState.particles.length - 1; i >= 0; i--) {
+                    const p = gameState.particles[i];
+                    p.update(dt);
+                    p.draw(ctx);
+                    if (p.alpha <= 0) gameState.particles.splice(i, 1);
+                }
+
+                for (let i = gameState.floatingTexts.length - 1; i >= 0; i--) {
+                    const ft = gameState.floatingTexts[i];
+                    ft.update(dt);
+                    ft.draw(ctx);
+                    if (ft.alpha <= 0) gameState.floatingTexts.splice(i, 1);
+                }
+            } else if (gameState.isShopOpen) {
+                gameState.pigs.forEach(pig => pig.draw(ctx));
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
