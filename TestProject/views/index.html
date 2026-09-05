@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BookOnl | Find your next story</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="storefront">
+  <header class="site-header">
+    <a class="brand" href="/">BOOK<span>ONL</span></a>
+    <nav class="main-nav"><a href="#categories">Categories</a><a href="#bestsellers">Best sellers</a><a href="#new-arrivals">New arrivals</a></nav>
+    <form id="searchForm" class="search-bar"><span class="search-icon" aria-hidden="true">⌕</span><input id="searchInput" placeholder="Search books, authors, ISBN..." aria-label="Search books"><button type="submit" class="search-submit" aria-label="Search">↵</button></form>
+    <button id="cartButton" class="icon-button" aria-label="Open cart">Cart <b id="cartCount">0</b></button>
+    <div class="account-wrap"><button id="accountButton" class="account-button" aria-expanded="false"><img id="avatarImage" src="/css/avatar-placeholder.svg" alt="Profile avatar"><span id="accountName">Sign in</span><span class="chevron">⌄</span></button><div id="accountMenu" class="account-menu" hidden><button id="editProfileButton" hidden>Edit profile</button><button id="ordersButton" hidden>My orders</button><button id="dashboardButton" hidden>Dashboard</button><button id="sellerButton" hidden>Become a seller</button><button id="logoutButton" hidden>Sign out</button></div></div>
+  </header>
+  <main>
+    <section class="hero"><div><p class="eyebrow">THE ONLINE BOOK MARKETPLACE</p><h1>Stories that stay with you.</h1><p>Discover thoughtful reads from independent sellers and make room for your next favourite book.</p><div class="hero-actions"><a class="button" href="#bestsellers">Shop best sellers</a><a class="text-link" href="#categories">Explore categories →</a></div></div><div class="hero-art"><span class="book-shape book-one">READ<br>MORE</span><span class="book-shape book-two">NEW<br>WORLDS</span><span class="book-shape book-three">BOOK<br>ONL</span></div></section>
+    <section id="bestsellers" class="content-section"><div class="section-heading"><div><p class="eyebrow">CURATED FOR YOU</p><h2>Best sellers</h2></div><button class="text-link" data-all-books>View all →</button></div><div id="bestSellerRail" class="book-rail"></div></section>
+    <section id="new-arrivals" class="content-section soft-section"><div class="section-heading"><div><p class="eyebrow">JUST IN</p><h2>New arrivals</h2></div></div><div id="newArrivalRail" class="book-rail"></div></section>
+    <section id="categories" class="content-section"><div class="section-heading"><div><p class="eyebrow">FIND YOUR NEXT OBSESSION</p><h2>Shop by category</h2></div></div><div id="categorySections"></div></section>
+  </main>
+  <aside id="cartDrawer" class="cart-drawer" hidden><div class="drawer-header"><h2>Your cart</h2><button id="closeCart" class="close-button" aria-label="Close cart">×</button></div><div id="cartItems"></div><div class="cart-footer"><strong>Total <span id="cartTotal">$0.00</span></strong><button id="checkoutButton" class="button">Checkout</button><p id="cartMessage" class="form-message"></p></div></aside>
+  <div id="profileModal" class="modal" hidden><div class="modal-content"><button id="closeModal" class="close-button" aria-label="Close">×</button><p class="eyebrow">PROFILE SETTINGS</p><h2>Edit your profile</h2><form id="profileForm"><div class="avatar-editor"><img id="modalAvatar" alt="Current profile avatar"><label class="upload-button">Change photo<input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"></label></div><label>Full name<input id="nameInput" name="name" required minlength="2"></label><label>Email<input id="emailInput" disabled></label><button class="button" type="submit">Save changes</button><p id="profileMessage" class="form-message"></p></form></div></div>
+  <div id="toast" class="toast" hidden></div>
+  <script src="/js/avatarHandler.js"></script><script src="/js/main.js"></script>
+</body>
+</html>

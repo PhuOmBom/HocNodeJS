@@ -1,0 +1,37 @@
+require('dotenv').config();
+const path = require('path');
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const bookRoutes = require('./routes/bookRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const sellerRoutes = require('./routes/sellerRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const sellerDashboardRoutes = require('./routes/sellerDashboardRoutes');
+const errorMiddleware = require('./middlewares/errorMiddleware');
+
+const app = express();
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true }));
+app.use(express.json({ limit: '14mb' }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/seller', sellerRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/seller-dashboard', sellerDashboardRoutes);
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'login.html')));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'register.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'dashboard.html')));
+app.use(errorMiddleware);
+
+module.exports = app;

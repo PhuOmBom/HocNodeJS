@@ -1,0 +1,7 @@
+const service = require('../services/adminService');
+async function overview(req, res, next) { try { res.json(await service.overview()); } catch (error) { next(error); } }
+async function users(req, res, next) { try { res.json({ users: await service.listUsers() }); } catch (error) { next(error); } }
+async function ban(req, res, next) { try { const user = await service.updateBan(req.params.userID, req.body.isBanned !== false); if (!user) return res.status(404).json({ message: 'User not found or protected.' }); res.json({ user }); } catch (error) { next(error); } }
+async function role(req, res, next) { try { if (!['customer', 'seller'].includes(req.body.role)) return res.status(400).json({ message: 'Role must be customer or seller.' }); const user = await service.updateRole(req.params.userID, req.body.role); if (!user) return res.status(404).json({ message: 'User not found or protected.' }); res.json({ user }); } catch (error) { next(error); } }
+async function sellerDashboard(req, res, next) { try { res.json(await service.sellerMetrics(req.user.userID)); } catch (error) { next(error); } }
+module.exports = { overview, users, ban, role, sellerDashboard };
