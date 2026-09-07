@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bắt lợn ching chong</title>
     <style>
         * {
@@ -70,6 +70,7 @@
             background: rgba(255, 255, 255, 0.88);
             border: 2px solid #de2910;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             padding: 8px 16px;
             border-radius: 12px;
@@ -153,6 +154,10 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+        }
+
+        .hud-action-container {
+            pointer-events: auto;
         }
 
         .action-btn {
@@ -315,6 +320,11 @@
             border-left: 5px solid #de2910;
         }
 
+        .letter-title {
+            color: #de2910;
+            text-align: center;
+        }
+
         /* Overlay Screens */
         .overlay-screen {
             position: absolute;
@@ -387,7 +397,7 @@
     <div id="game-container">
         <!-- YouTube Audio Player Embed -->
         <div id="youtube-player-container">
-            <iframe id="yt-audio" width="200" height="200" 
+            <iframe id="yt-audio" title="Background music player" width="200" height="200" 
                 src="https://www.youtube.com/embed/ojcq6e60b3c?enablejsapi=1&autoplay=0&loop=1&playlist=ojcq6e60b3c" 
                 frameborder="0" allow="autoplay">
             </iframe>
@@ -431,7 +441,7 @@
                 <div class="weapon-badge" id="weapon-display">
                     Trang bị: Dây Thừng (1 ST)
                 </div>
-                <div style="pointer-events: auto;">
+                <div class="hud-action-container">
                     <button class="action-btn" id="btn-open-shop">🛒 VŨ KHÍ & MÁY BẮT</button>
                 </div>
             </div>
@@ -445,7 +455,7 @@
 
         <!-- Game Over Screen -->
         <div class="overlay-screen" id="gameover-screen" style="display: none;">
-            <h1 style="color: #de2910;">BẠN ĐÃ ĐỂ TRÙM THOÁT!</h1>
+            <h1>BẠN ĐÃ ĐỂ TRÙM THOÁT!</h1>
             <button class="btn-large" id="btn-restart">THỬ LẠI</button>
         </div>
 
@@ -458,11 +468,11 @@
 
         <!-- Thư gửi gái Khuê -->
         <div class="letter-modal" id="letter-modal">
-            <h2 style="color: #de2910; text-align: center;">🏆 Chúc mừng cu! 🏆</h2>
+            <h2 class="letter-title">🏆 Chúc mừng cu! 🏆</h2>
             <div class="letter-content">
                 "Gửi gái Khuê, t mong m sẽ có một cuộc sống đại học thật tuyệt vời, mong cho m có sức khỏe siêu tốt, mong cho m gặp đc những người bạn mới tuyệt vời bên TQ, t biết sẽ có những lúc khó khăn và gian nan, nhưng nếu là m thì t tin là m sẽ vượt qua những trắc trở đó. Tạm biệt và hẹn ngày gặp lại nha cu. Thỉnh thoảng nhắn cho t vài câu nhé, t dễ quên người lắm🥀🥀🥀"
             </div>
-            <button class="close-modal" id="btn-close-letter" style="background: #de2910;">ĐÃ ĐỌC VÀ LƯU GIỮ ❤️</button>
+            <button class="close-modal" id="btn-close-letter">ĐÃ ĐỌC VÀ LƯU GIỮ ❤️</button>
         </div>
     </div>
 

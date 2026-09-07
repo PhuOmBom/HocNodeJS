@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title id="categoryPageTitle">Explore Genre | BookOnl Marketplace</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="storefront">
+  <!-- Top Announcement Bar -->
+  <div class="top-announcement-bar">
+    <div class="announcement-inner">
+      <div class="announcement-left">
+        <div class="announcement-ticker">
+          <span class="announce-badge">GENRE COLLECTION</span>
+          <span class="announce-text">✨ Discover authentic books, manga, manhwa & graphic novels with verified covers</span>
+        </div>
+      </div>
+      <div class="announcement-right">
+        <a href="/" class="top-link">← Back to Storefront</a>
+        <span class="top-sep">•</span>
+        <span class="top-currency">USD ($)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Site Header -->
+  <header class="site-header">
+    <div class="header-brand-wrap">
+      <a class="brand" href="/">
+        <span class="brand-logo-icon">📖</span>
+        <span>BOOK<span>ONL</span></span>
+      </a>
+      <span class="brand-subtitle">MARKETPLACE</span>
+    </div>
+
+    <!-- Center Search Bar -->
+    <div class="header-search-container">
+      <form id="searchForm" class="search-bar" action="/">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input id="searchInput" name="search" placeholder="Search by title, author, keyword, ISBN..." aria-label="Search books">
+        <button type="submit" class="search-submit" aria-label="Search">↵</button>
+      </form>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <a id="navPublishBtn" href="/publish" class="header-nav-btn publish-nav-btn" hidden title="Publish new book listing">
+        <span>✍️ Sell a Book</span>
+      </a>
+      <a id="navDashboardBtn" href="/dashboard" class="header-nav-btn dashboard-nav-btn" hidden title="Management Dashboard">
+        <span>📊 Dashboard</span>
+      </a>
+
+      <!-- Cart Button -->
+      <button id="cartButton" class="icon-button" aria-label="Open cart">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-label">Cart</span>
+        <b id="cartCount">0</b>
+      </button>
+
+      <!-- Account Menu -->
+      <div class="account-wrap">
+        <button id="accountButton" class="account-button" aria-expanded="false">
+          <img id="avatarImage" src="/css/avatar-placeholder.svg" alt="Profile avatar">
+          <span id="accountName">Sign in</span>
+        </button>
+        <div id="accountDropdown" class="account-dropdown" hidden>
+          <div id="authLinks">
+            <a href="/login">Sign in</a>
+            <a href="/register">Create account</a>
+          </div>
+          <div id="userLinks" hidden>
+            <a href="/profile">My Profile & Addresses</a>
+            <a href="/dashboard">Dashboard</a>
+            <button id="ordersDrawerBtn" type="button">My Purchase History</button>
+            <button id="logoutButton" type="button">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick Category Switcher Pills -->
+  <nav class="category-pills-bar" aria-label="Quick genre navigation">
+    <div class="category-pills-scroll" id="categoryPillList">
+      <button type="button" class="cat-pill-item" onclick="window.location.href='/'">🏠 Storefront</button>
+      <!-- Populated via category.js -->
+    </div>
+  </nav>
+
+  <!-- Main Category Showcase Container -->
+  <main class="category-page-wrap">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumb-trail" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span class="sep">/</span>
+      <a href="/#categories">Genres</a>
+      <span class="sep">/</span>
+      <span class="current" id="categoryBreadcrumbName">Loading Genre...</span>
+    </nav>
+
+    <!-- Genre Banner Hero -->
+    <section class="genre-banner-hero">
+      <div class="genre-banner-content">
+        <span class="genre-eyebrow" id="genreEyebrow">GENRE SHOWCASE</span>
+        <h1 class="genre-hero-title" id="genreHeroTitle">Loading...</h1>
+        <p class="genre-hero-desc" id="genreHeroDesc">Explore our curated collection of bestselling titles.</p>
+        <div class="genre-hero-stats">
+          <span class="stat-pill"><strong id="genreBookCount">0</strong> Titles Available</span>
+          <span class="stat-pill">⚡ 100% Genuine Publisher Covers</span>
+          <span class="stat-pill">⭐ Average Rating <strong id="genreAvgRating">4.8</strong>/5.0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Genre Filter & Toolbar -->
+    <div class="genre-toolbar">
+      <div class="toolbar-left">
+        <span class="results-count" id="resultsCount">Showing all titles</span>
+      </div>
+      <div class="toolbar-right">
+        <!-- In-genre search -->
+        <div class="genre-search-box">
+          <input type="text" id="genreSearchInput" placeholder="Filter this genre..." aria-label="Filter genre">
+        </div>
+
+        <!-- Sort Select -->
+        <div class="genre-sort-box">
+          <label for="sortSelect">Sort by:</label>
+          <select id="sortSelect">
+            <option value="bestselling" selected>🔥 Best Selling</option>
+            <option value="rating">⭐ Highest Rated</option>
+            <option value="price-asc">💵 Price: Low to High</option>
+            <option value="price-desc">💎 Price: High to Low</option>
+            <option value="newest">✨ New Arrivals</option>
+            <option value="title">🔤 Title A-Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manga / Manhwa / Book Anime Grid (Styled like Image 4) -->
+    <div class="anime-catalog-grid" id="genreBooksGrid">
+      <div class="grid-loading">
+        <div class="spinner"></div>
+        <p>Loading genre collection...</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div id="cartBackdrop" class="drawer-backdrop" hidden></div>
+  <aside id="cartDrawer" class="cart-drawer" hidden>
+    <div class="cart-header">
+      <div>
+        <p class="eyebrow" style="margin:0 0 2px; color:var(--accent);">SHOPPING BAG</p>
+        <h2>Your Cart</h2>
+      </div>
+      <button id="closeCartDrawer" class="close-button" aria-label="Close cart">×</button>
+    </div>
+    <div id="cartItemsList" class="cart-items-scroll"></div>
+    <div class="cart-footer">
+      <div class="cart-subtotal-row">
+        <span>Estimated Total</span>
+        <strong id="cartTotalSummary">$0.00</strong>
+      </div>
+      <p class="cart-guarantee">🛡️ Free shipping &amp; 30-day money-back guarantee</p>
+      <button id="openCheckoutButton" class="button button-primary cart-checkout-btn">
+        Proceed to Checkout →
+      </button>
+    </div>
+  </aside>
+
+  <!-- Orders Drawer -->
+  <aside id="ordersDrawer" class="cart-drawer orders-drawer" hidden>
+    <div class="cart-header">
+      <div>
+        <p class="eyebrow" style="margin:0 0 2px; color:var(--accent);">PURCHASE HISTORY</p>
+        <h2>Your Orders</h2>
+      </div>
+      <button id="closeOrdersDrawer" class="close-button" aria-label="Close orders drawer">×</button>
+    </div>
+    <div id="userOrdersList" class="orders-drawer-scroll"></div>
+  </aside>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/js/avatarHandler.js"></script>
+  <script src="/js/category.js"></script>
+</body>
+</html>

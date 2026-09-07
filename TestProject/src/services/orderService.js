@@ -19,10 +19,16 @@ async function createOrder(customerID, shipping, paymentMethod = 'cod') {
   return order;
 }
 
+function listMyPurchases(user) {
+  const ids = [user.userID, user._id ? user._id.toString() : null].filter(Boolean);
+  return Order.find({ customerID: { $in: ids } }).sort({ createdAt: -1 });
+}
+
 function listOrders(user) {
   if (user.role === 'admin') return Order.find().sort({ createdAt: -1 });
   if (user.role === 'seller') return Order.find({ 'items.sellerId': user.userID }).sort({ createdAt: -1 });
-  return Order.find({ customerID: user.userID }).sort({ createdAt: -1 });
+  const ids = [user.userID, user._id ? user._id.toString() : null].filter(Boolean);
+  return Order.find({ customerID: { $in: ids } }).sort({ createdAt: -1 });
 }
 
 async function updateStatus(id, status, user) {
@@ -30,4 +36,4 @@ async function updateStatus(id, status, user) {
   return Order.findOneAndUpdate(filter, { status }, { new: true, runValidators: true });
 }
 
-module.exports = { createOrder, listOrders, updateStatus };
+module.exports = { createOrder, listOrders, listMyPurchases, updateStatus };

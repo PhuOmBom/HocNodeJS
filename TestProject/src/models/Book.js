@@ -7,6 +7,7 @@ const bookSchema = new mongoose.Schema({
   cover: { type: String, default: '' },
   images: [{ type: String }],
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+  categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
   price: { type: Number, required: true, min: 0, default: 0 },
   originalPrice: { type: Number, min: 0 },
   stock: { type: Number, min: 0, default: 0 },

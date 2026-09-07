@@ -9,6 +9,15 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'customer', 'seller', 'admin'], default: 'customer' },
   status: { type: String, enum: ['logged_in', 'offline'], default: 'offline' },
   avatar: { type: String, default: '' },
+  phone: { type: String, trim: true, default: '' },
+  address: { type: String, trim: true, default: '' },
+  shippingAddresses: [{
+    label: { type: String, default: 'Nhà riêng' },
+    recipientName: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    address: { type: String, trim: true },
+    isDefault: { type: Boolean, default: false }
+  }],
   isBanned: { type: Boolean, default: false },
   sellerProfile: {
     storeName: { type: String, trim: true, maxlength: 120 },

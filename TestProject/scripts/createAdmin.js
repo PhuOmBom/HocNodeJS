@@ -39,9 +39,10 @@ function ask(question, hidden = false) {
 async function main() {
   try {
     await connectDatabase();
-    const name = await ask('Admin name: ');
-    const email = await ask('Admin email: ');
-    const password = await ask('Admin password: ', true);
+    const [, , argName, argEmail, argPassword] = process.argv;
+    const name = argName || await ask('Admin name: ');
+    const email = argEmail || await ask('Admin email: ');
+    const password = argPassword || await ask('Admin password: ', true);
     if (!name || !email || password.length < 6) throw new Error('Name and email are required; password must contain at least 6 characters.');
     const existing = await User.findOne({ email: email.toLowerCase() }).select('+password');
     if (existing) {

@@ -4,6 +4,7 @@ const roles = require('../middlewares/roleMiddleware');
 const controller = require('../controllers/categoryController');
 const router = express.Router();
 router.get('/', controller.list);
+router.get('/top-selling', controller.getTopSelling);
 router.post('/', auth, roles('admin'), controller.create);
 router.patch('/:id', auth, roles('admin'), controller.update);
 router.delete('/:id', auth, roles('admin'), controller.remove);

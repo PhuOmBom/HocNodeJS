@@ -1,5 +1,77 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Create account | BookOnl</title><link rel="stylesheet" href="/css/style.css"></head>
-<body class="auth-page"><main class="auth-card"><p class="eyebrow">BOOKONL / ACCOUNT</p><h1>Create your account</h1><p class="muted">Start managing your reading profile in a few seconds.</p><form id="registerForm"><label>Full name<input type="text" name="name" required minlength="2" autocomplete="name"></label><label>Email<input type="email" name="email" required autocomplete="email"></label><label>Password<input type="password" name="password" required minlength="6" autocomplete="new-password"></label><button class="button" type="submit">Create account</button><p id="formMessage" class="form-message"></p></form><p class="switch-link">Already have an account? <a href="/login">Sign in</a></p></main><script src="/js/main.js"></script></body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account | BookOnl</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="auth-page">
+  <main class="auth-layout register-layout">
+    <section class="auth-story register-story">
+      <a class="brand" href="/">BOOK<span>ONL</span></a>
+      <div class="story-copy">
+        <p class="eyebrow">A WORLD OF TIMELESS STORIES</p>
+        <h1>Begin your reading journey today.</h1>
+        <p>Create an account to build your reading wishlist, save delivery addresses, and discover gems from independent booksellers.</p>
+      </div>
+      <div class="story-note">
+        <span>“</span>
+        <p>A room without books is like a body without a soul.</p>
+        <small>— Marcus Tullius Cicero</small>
+      </div>
+    </section>
+
+    <section class="auth-card register-card">
+      <a class="back-link" href="/">← Back to BookOnl</a>
+      <p class="eyebrow">NEW MEMBERSHIP</p>
+      <h2>Create your account</h2>
+      <p class="muted">Takes only 30 seconds to start shopping or apply as an independent seller.</p>
+      
+      <form id="registerForm">
+        <label>
+          <span>Full name <b class="req">*</b></span>
+          <input type="text" name="name" required minlength="2" autocomplete="name" placeholder="John Doe">
+        </label>
+        
+        <label>
+          <span>Email address <b class="req">*</b></span>
+          <input type="email" name="email" required autocomplete="email" placeholder="you@example.com">
+        </label>
+        
+        <label>
+          <span class="password-label">
+            <span>Password <b class="req">*</b></span>
+            <button type="button" class="password-toggle" data-password-toggle="registerPassword">Show</button>
+          </span>
+          <span class="password-field">
+            <input id="registerPassword" type="password" name="password" required minlength="6" autocomplete="new-password" placeholder="At least 6 characters">
+          </span>
+        </label>
+
+        <div class="account-delivery-header">
+          <span class="sub-label">Delivery & Contact (provide at least one)</span>
+        </div>
+
+        <div class="form-row-2">
+          <label>
+            <span>Phone number</span>
+            <input type="tel" name="phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
+          </label>
+          <label>
+            <span>Shipping address</span>
+            <input type="text" name="address" placeholder="Street, Apt, City, State, ZIP...">
+          </label>
+        </div>
+
+        <button class="button auth-submit" type="submit">Create account</button>
+        <p id="formMessage" class="form-message" role="alert"></p>
+      </form>
+
+      <p class="switch-link">Already have an account? <a href="/login">Sign in</a></p>
+    </section>
+  </main>
+  
+  <script src="/js/main.js"></script>
+</body>
 </html>

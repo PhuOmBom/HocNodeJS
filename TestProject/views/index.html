@@ -3,26 +3,437 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BookOnl | Find your next story</title>
+  <title>BookOnl | The Premier Online Book Marketplace</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="storefront">
+  <!-- Top Announcement Bar -->
+  <div class="top-announcement-bar">
+    <div class="announcement-inner">
+      <div class="announcement-left">
+        <div id="announcementTicker" class="announcement-ticker ticker-anim-in">
+          <span class="announce-badge" id="tickerBadge">FLASH SALE</span>
+          <span class="announce-text" id="tickerText">✨ Enjoy Free Standard Shipping on all orders over $35 | Code: <strong>READ2026</strong></span>
+        </div>
+      </div>
+      <div class="announcement-right">
+        <a href="#categories" class="top-link">Browse Genres</a>
+        <span class="top-sep">•</span>
+        <a href="/publish" class="top-link">Sell on BookOnl</a>
+        <span class="top-sep">•</span>
+        <span class="top-currency">USD ($)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Site Header -->
   <header class="site-header">
-    <a class="brand" href="/">BOOK<span>ONL</span></a>
-    <nav class="main-nav"><a href="#categories">Categories</a><a href="#bestsellers">Best sellers</a><a href="#new-arrivals">New arrivals</a></nav>
-    <form id="searchForm" class="search-bar"><span class="search-icon" aria-hidden="true">⌕</span><input id="searchInput" placeholder="Search books, authors, ISBN..." aria-label="Search books"><button type="submit" class="search-submit" aria-label="Search">↵</button></form>
-    <button id="cartButton" class="icon-button" aria-label="Open cart">Cart <b id="cartCount">0</b></button>
-    <div class="account-wrap"><button id="accountButton" class="account-button" aria-expanded="false"><img id="avatarImage" src="/css/avatar-placeholder.svg" alt="Profile avatar"><span id="accountName">Sign in</span><span class="chevron">⌄</span></button><div id="accountMenu" class="account-menu" hidden><button id="editProfileButton" hidden>Edit profile</button><button id="ordersButton" hidden>My orders</button><button id="dashboardButton" hidden>Dashboard</button><button id="sellerButton" hidden>Become a seller</button><button id="logoutButton" hidden>Sign out</button></div></div>
+    <div class="header-brand-wrap">
+      <a class="brand" href="/">
+        <span class="brand-logo-icon">📖</span>
+        <span>BOOK<span>ONL</span></span>
+      </a>
+      <span class="brand-subtitle">MARKETPLACE</span>
+    </div>
+
+    <!-- Center Search Bar -->
+    <div class="header-search-container">
+      <form id="searchForm" class="search-bar">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input id="searchInput" placeholder="Search by title, author, keyword, ISBN..." aria-label="Search books">
+        <button type="submit" class="search-submit" aria-label="Search">↵</button>
+      </form>
+    </div>
+
+    <!-- Header Navigation Links & Actions -->
+    <nav class="header-nav">
+      <a href="#bestsellers" class="nav-link">Bestsellers</a>
+      <a href="#new-arrivals" class="nav-link">New Arrivals</a>
+      <a href="#categories" class="nav-link">Genres</a>
+    </nav>
+
+    <div class="header-actions">
+      <!-- Sell a Book for sellers & admin -->
+      <a id="navPublishBtn" href="/publish" class="header-nav-btn publish-nav-btn" hidden title="Publish new book listing">
+        <span>✍️ Sell a Book</span>
+      </a>
+
+      <!-- Dashboard Button for sellers & admin -->
+      <a id="navDashboardBtn" href="/dashboard" class="header-nav-btn dashboard-nav-btn" hidden title="Management Dashboard">
+        <span>📊 Dashboard</span>
+      </a>
+
+      <!-- Cart Button -->
+      <button id="cartButton" class="icon-button" aria-label="Open cart">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-label">Cart</span>
+        <b id="cartCount">0</b>
+      </button>
+
+      <!-- Account Menu -->
+      <div class="account-wrap">
+        <button id="accountButton" class="account-button" aria-expanded="false">
+          <img id="avatarImage" src="/css/avatar-placeholder.svg" alt="Profile avatar">
+          <span id="accountName">Sign in</span>
+          <span class="chevron">⌄</span>
+        </button>
+        <div id="accountMenu" class="account-menu" hidden>
+          <div class="menu-user-info" id="menuUserInfo"></div>
+          <button id="editProfileButton" hidden>👤 Profile & Addresses</button>
+          <button id="ordersButton" hidden>📦 My Orders</button>
+          <button id="studioButton" hidden>✍️ Publish Studio</button>
+          <button id="dashboardButton" hidden>📊 Dashboard</button>
+          <button id="sellerButton" hidden>🏪 Become a Seller</button>
+          <div class="menu-divider"></div>
+          <button id="logoutButton" class="logout-btn" hidden>🚪 Sign out</button>
+        </div>
+      </div>
+    </div>
   </header>
-  <main>
-    <section class="hero"><div><p class="eyebrow">THE ONLINE BOOK MARKETPLACE</p><h1>Stories that stay with you.</h1><p>Discover thoughtful reads from independent sellers and make room for your next favourite book.</p><div class="hero-actions"><a class="button" href="#bestsellers">Shop best sellers</a><a class="text-link" href="#categories">Explore categories →</a></div></div><div class="hero-art"><span class="book-shape book-one">READ<br>MORE</span><span class="book-shape book-two">NEW<br>WORLDS</span><span class="book-shape book-three">BOOK<br>ONL</span></div></section>
-    <section id="bestsellers" class="content-section"><div class="section-heading"><div><p class="eyebrow">CURATED FOR YOU</p><h2>Best sellers</h2></div><button class="text-link" data-all-books>View all →</button></div><div id="bestSellerRail" class="book-rail"></div></section>
-    <section id="new-arrivals" class="content-section soft-section"><div class="section-heading"><div><p class="eyebrow">JUST IN</p><h2>New arrivals</h2></div></div><div id="newArrivalRail" class="book-rail"></div></section>
-    <section id="categories" class="content-section"><div class="section-heading"><div><p class="eyebrow">FIND YOUR NEXT OBSESSION</p><h2>Shop by category</h2></div></div><div id="categorySections"></div></section>
-  </main>
-  <aside id="cartDrawer" class="cart-drawer" hidden><div class="drawer-header"><h2>Your cart</h2><button id="closeCart" class="close-button" aria-label="Close cart">×</button></div><div id="cartItems"></div><div class="cart-footer"><strong>Total <span id="cartTotal">$0.00</span></strong><button id="checkoutButton" class="button">Checkout</button><p id="cartMessage" class="form-message"></p></div></aside>
-  <div id="profileModal" class="modal" hidden><div class="modal-content"><button id="closeModal" class="close-button" aria-label="Close">×</button><p class="eyebrow">PROFILE SETTINGS</p><h2>Edit your profile</h2><form id="profileForm"><div class="avatar-editor"><img id="modalAvatar" alt="Current profile avatar"><label class="upload-button">Change photo<input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp"></label></div><label>Full name<input id="nameInput" name="name" required minlength="2"></label><label>Email<input id="emailInput" disabled></label><button class="button" type="submit">Save changes</button><p id="profileMessage" class="form-message"></p></form></div></div>
+
+  <!-- Secondary Quick Genre Subnav Bar -->
+  <nav class="quick-category-bar" id="quickCategoryBar">
+    <div class="category-scroll-container" id="categoryPillList">
+      <!-- Populated dynamically via JS -->
+    </div>
+  </nav>
+
+  <!-- Hero Banner with 3D Real-time Best-selling Books -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="eyebrow">CURATED INDIE MARKETPLACE</p>
+      <h1>Stories that stay with you forever.</h1>
+      <p>Discover rare gems, timeless literature, and trending graphic novels from independent bookstores and sellers worldwide.</p>
+      <div class="hero-actions">
+        <a class="button button-primary button-lg" href="#bestsellers">Shop Bestsellers</a>
+        <a class="button button-outline button-lg" href="#categories">Explore All Genres →</a>
+      </div>
+      <div class="hero-stats-row">
+        <div class="hero-stat-item">
+          <strong>24+</strong>
+          <span>Book Categories</span>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div class="hero-stat-item">
+          <strong>100%</strong>
+          <span>Genuine Copies</span>
+        </div>
+        <div class="hero-stat-sep"></div>
+        <div class="hero-stat-item">
+          <strong>Fast</strong>
+          <span>Doorstep Delivery</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D Interactive Hero Books with Real-time Top Selling Categories -->
+    <div class="hero-art-wrapper">
+      <div class="hero-art" id="heroBooksContainer">
+        <!-- Book 1 -->
+        <div class="book-shape book-one" id="heroBook1" role="button" tabindex="0" title="Click to view all books in this category">
+          <div class="book-spine-shine"></div>
+          <span class="book-rank-tag">#1 BESTSELLER</span>
+          <div class="book-title-wrap">
+            <strong class="book-genre-name" id="heroCatName1">Loading...</strong>
+            <small class="book-count-label" id="heroCatCount1">Explore now</small>
+          </div>
+          <span class="book-explore-btn">Browse Genre →</span>
+        </div>
+
+        <!-- Book 2 -->
+        <div class="book-shape book-two" id="heroBook2" role="button" tabindex="0" title="Click to view all books in this category">
+          <div class="book-spine-shine"></div>
+          <span class="book-rank-tag">#2 TRENDING</span>
+          <div class="book-title-wrap">
+            <strong class="book-genre-name" id="heroCatName2">Loading...</strong>
+            <small class="book-count-label" id="heroCatCount2">Explore now</small>
+          </div>
+          <span class="book-explore-btn">Browse Genre →</span>
+        </div>
+
+        <!-- Book 3 -->
+        <div class="book-shape book-three" id="heroBook3" role="button" tabindex="0" title="Click to view all books in this category">
+          <div class="book-spine-shine"></div>
+          <span class="book-rank-tag">#3 READER'S CHOICE</span>
+          <div class="book-title-wrap">
+            <strong class="book-genre-name" id="heroCatName3">Loading...</strong>
+            <small class="book-count-label" id="heroCatCount3">Explore now</small>
+          </div>
+          <span class="book-explore-btn">Browse Genre →</span>
+        </div>
+      </div>
+      <p class="hero-art-caption">⚡ Top 3 Best-Selling Categories updated in real time</p>
+    </div>
+  </section>
+
+  <!-- Two-Column Store Layout (Left Sidebar + Main Catalog) -->
+  <div class="store-container">
+    <div class="store-layout">
+      
+      <!-- Left Sidebar: Rich Filters & Categories -->
+      <aside class="store-sidebar">
+        <!-- Category Filter Widget -->
+        <div class="sidebar-widget">
+          <div class="widget-header">
+            <h3>Browse Genres</h3>
+            <button type="button" id="sidebarClearCategoryBtn" class="widget-reset-btn" hidden>Reset</button>
+          </div>
+          <div class="sidebar-category-list" id="sidebarCategoryList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Custom Price Range Filter Widget -->
+        <div class="sidebar-widget price-filter-widget">
+          <div class="widget-header">
+            <h3>Filter by Price</h3>
+            <button type="button" id="resetPriceFilterBtn" class="widget-reset-btn" title="Reset price filter" hidden>Reset</button>
+          </div>
+          <div class="custom-price-filter">
+            <div class="price-inputs-row">
+              <div class="price-input-box">
+                <span class="currency-symbol">$</span>
+                <input type="number" id="minPriceInput" min="0" max="999" step="any" placeholder="Min" aria-label="Minimum price">
+              </div>
+              <span class="price-range-dash">—</span>
+              <div class="price-input-box">
+                <span class="currency-symbol">$</span>
+                <input type="number" id="maxPriceInput" min="0" max="999" step="any" placeholder="Max" aria-label="Maximum price">
+              </div>
+            </div>
+
+            <!-- Quick range slider -->
+            <div class="price-slider-group">
+              <input type="range" id="priceRangeSlider" min="5" max="60" step="1" value="60" class="price-range-slider" aria-label="Max price range slider">
+              <div class="slider-indicators">
+                <span>$5</span>
+                <span id="sliderValueDisplay">Max: $60</span>
+              </div>
+            </div>
+
+            <button type="button" id="applyPriceFilterBtn" class="button button-primary button-sm apply-price-btn">Apply Price</button>
+            <p id="priceFilterHint" class="price-hint-text" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <!-- Staff Spotlight Box -->
+        <div class="sidebar-spotlight-card">
+          <div class="spotlight-badge">STAFF PICK</div>
+          <h4>The Power of Reading</h4>
+          <p>“Books give a soul to the universe, wings to the mind, flight to the imagination, and life to everything.”</p>
+          <small>— Plato</small>
+        </div>
+
+        <!-- Guarantee Badge -->
+        <div class="sidebar-trust-box">
+          <div class="trust-item">
+            <span class="trust-icon">🛡️</span>
+            <div>
+              <strong>Secure Transactions</strong>
+              <small>Cash on delivery & protected payments</small>
+            </div>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon">📦</span>
+            <div>
+              <strong>Careful Packaging</strong>
+              <small>Protected with eco-bubble sleeves</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Catalog Column -->
+      <main class="store-main-col">
+        <!-- Active Filter Tag Banner -->
+        <div id="filterBanner" class="filter-active-banner" hidden>
+          <div class="filter-tag-content">
+            <span>Filtering by: <strong id="filterLabelName">All</strong></span>
+            <button id="clearFilterBtn" class="clear-filter-btn" title="Clear filter">✕ Clear filter</button>
+          </div>
+        </div>
+
+        <!-- Bestsellers Section -->
+        <section id="bestsellers" class="catalog-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">MOST POPULAR</p>
+              <h2>Best Sellers</h2>
+            </div>
+            <button class="text-link" id="viewAllBooksBtn">View All Books →</button>
+          </div>
+          <div id="bestSellerRail" class="book-rail"></div>
+        </section>
+
+        <!-- New Arrivals Section -->
+        <section id="new-arrivals" class="catalog-section soft-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">JUST ARRIVED</p>
+              <h2>New Releases</h2>
+            </div>
+          </div>
+          <div id="newArrivalRail" class="book-rail"></div>
+        </section>
+
+        <!-- Shop by Category Section -->
+        <section id="categories" class="catalog-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">DISCOVER BY SUBJECT</p>
+              <h2>Shop by Category</h2>
+            </div>
+          </div>
+          <div id="categorySections"></div>
+        </section>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div id="cartBackdrop" class="drawer-backdrop" hidden></div>
+  <aside id="cartDrawer" class="cart-drawer" hidden>
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow" style="margin:0 0 2px; color:var(--emerald);">YOUR SELECTIONS</p>
+        <h2>Shopping Cart</h2>
+      </div>
+      <button id="closeCart" class="close-button" aria-label="Close cart">×</button>
+    </div>
+    <div id="cartItems" class="cart-items-scroll"></div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Order Total:</span>
+        <strong id="cartTotal">$0.00</strong>
+      </div>
+      <div class="cart-shipping-notice">🚚 Free shipping &amp; 30-day returns</div>
+      <button id="checkoutButton" class="button button-primary button-block button-lg">Proceed to Checkout →</button>
+      <p id="cartMessage" class="form-message"></p>
+    </div>
+  </aside>
+
+  <!-- Modern Checkout Modal -->
+  <div id="checkoutModal" class="modal" hidden>
+    <div class="modal-content checkout-modal-content">
+      <button id="closeCheckoutModal" class="close-button" aria-label="Close">×</button>
+      <p class="eyebrow">CHECKOUT & DELIVERY</p>
+      <h2>Order & Shipping Details</h2>
+      <p class="muted">Please review or select your delivery address and contact phone number.</p>
+
+      <form id="checkoutForm" class="checkout-form">
+        <!-- Delivery Destination Selection -->
+        <div class="checkout-section">
+          <div class="section-title-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 style="margin:0;">1. Delivery Destination <b class="req">*</b></h3>
+            <a href="/profile" style="font-size:11px; color:var(--emerald); font-weight:700; text-decoration:underline;">+ Manage Addresses in Profile</a>
+          </div>
+          
+          <!-- Saved addresses radio options -->
+          <div id="savedAddressesList" class="saved-address-cards"></div>
+
+          <!-- Recipient & address inputs -->
+          <div id="customAddressWrap" class="custom-address-wrap">
+            <div class="form-row-2">
+              <label>
+                <span>Recipient Full Name <b class="req">*</b></span>
+                <input id="checkoutFullName" name="fullName" required placeholder="John Doe">
+              </label>
+              <label>
+                <span>Contact Phone Number <b class="req">*</b></span>
+                <input id="checkoutPhone" name="phone" type="tel" required placeholder="+1 (555) 000-0000">
+              </label>
+            </div>
+            <label class="custom-address-label">
+              <span>Delivery Street Address <b class="req">*</b></span>
+              <input id="checkoutAddress" name="address" required placeholder="Street address, apartment, suite, city, state, postal code">
+            </label>
+          </div>
+        </div>
+
+        <!-- Payment method -->
+        <div class="checkout-section">
+          <h3>3. Payment Method</h3>
+          <div class="payment-method-badge">
+            <span class="payment-icon">💵</span>
+            <div>
+              <strong>Cash on Delivery (COD)</strong>
+              <small>Pay in cash upon package inspection and delivery.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary Box -->
+        <div class="order-summary-box">
+          <div class="summary-line">
+            <span>Total Items:</span>
+            <strong id="checkoutItemCount">0 books</strong>
+          </div>
+          <div class="summary-line summary-total">
+            <span>Total Amount:</span>
+            <strong id="checkoutTotalAmount">$0.00</strong>
+          </div>
+        </div>
+
+        <div class="checkout-actions">
+          <button type="submit" id="confirmOrderBtn" class="button button-primary button-lg button-block">
+            Confirm & Place Order
+          </button>
+          <p id="checkoutMessage" class="form-message"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- User Orders Right Sidebar Drawer -->
+  <div id="ordersBackdrop" class="drawer-backdrop" hidden></div>
+  <aside id="ordersDrawer" class="orders-drawer" hidden>
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow" style="margin:0 0 2px; color:var(--accent);">PURCHASE HISTORY</p>
+        <h2>Your Orders</h2>
+      </div>
+      <button id="closeOrdersDrawer" class="close-button" aria-label="Close orders drawer">×</button>
+    </div>
+    <div id="userOrdersList" class="orders-drawer-scroll"></div>
+  </aside>
+
+  <!-- Seller Request Modal -->
+  <div id="sellerModal" class="modal" hidden>
+    <div class="modal-content">
+      <button id="closeSellerModal" class="close-button" aria-label="Close">×</button>
+      <p class="eyebrow">PARTNER WITH US</p>
+      <h2>Apply to Become a Bookseller</h2>
+      <p class="muted">Open your bookstore storefront on BookOnl and reach thousands of passionate book lovers.</p>
+      
+      <form id="sellerRequestForm" class="standard-form">
+        <label>
+          <span>Store / Business Name <b class="req">*</b></span>
+          <input name="storeName" required placeholder="e.g. Sunrise Rare Books">
+        </label>
+        <label>
+          <span>Business Phone Number <b class="req">*</b></span>
+          <input name="phone" type="tel" required placeholder="+1 (555) 000-0000">
+        </label>
+        <label>
+          <span>Warehouse / Dispatch Address <b class="req">*</b></span>
+          <input name="address" required placeholder="Dispatch warehouse address...">
+        </label>
+        <label>
+          <span>Store Description & Specialties</span>
+          <textarea name="description" rows="3" placeholder="Tell us about the books you specialize in, editions, experience..."></textarea>
+        </label>
+        <button class="button button-primary" type="submit">Submit Application</button>
+        <p id="sellerRequestMessage" class="form-message"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
   <div id="toast" class="toast" hidden></div>
-  <script src="/js/avatarHandler.js"></script><script src="/js/main.js"></script>
+
+  <script src="/js/avatarHandler.js"></script>
+  <script src="/js/main.js"></script>
 </body>
 </html>

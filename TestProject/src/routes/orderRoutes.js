@@ -5,6 +5,7 @@ const controller = require('../controllers/orderController');
 const router = express.Router();
 router.use(auth);
 router.get('/', controller.list);
+router.get('/my-orders', controller.listMyOrders);
 router.post('/', roles('customer', 'seller', 'admin', 'user'), controller.create);
 router.patch('/:id/status', roles('seller', 'admin'), controller.updateStatus);
 module.exports = router;

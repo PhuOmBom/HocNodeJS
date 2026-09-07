@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account Settings & Address Book | BookOnl</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="profile-page">
+  <!-- Header -->
+  <header class="site-header profile-header">
+    <div class="header-brand-wrap">
+      <a class="brand" href="/">
+        <span class="brand-logo-icon">📖</span>
+        <span>BOOK<span>ONL</span></span>
+      </a>
+      <span class="brand-subtitle" id="profileRoleSubtitle">SETTINGS</span>
+    </div>
+
+    <div class="dash-header-center">
+      <span class="dash-greeting">Account &amp; Shipping Addresses</span>
+    </div>
+
+    <div class="header-actions">
+      <!-- 1. Sell a Book (shown for seller & admin) -->
+      <a href="/publish" class="header-nav-btn publish-nav-btn" id="topPublishBtn" hidden title="Publish new book listing">
+        <span>✍️ Sell a Book</span>
+      </a>
+
+      <!-- 2. Dashboard (shown for seller & admin) -->
+      <a href="/dashboard" class="header-nav-btn dashboard-nav-btn" id="topDashboardBtn" hidden title="Management Dashboard">
+        <span>📊 Dashboard</span>
+      </a>
+
+      <!-- 3. Storefront -->
+      <a href="/" class="header-nav-btn store-nav-btn" title="Browse Book Store">
+        <span>🏪 Storefront</span>
+      </a>
+
+      <!-- 4. Profile (active) -->
+      <a href="/profile" class="header-nav-btn profile-nav-btn is-active" id="topProfileBtn" title="My Profile & Settings">
+        <span>👤 My Profile</span>
+      </a>
+
+      <!-- 5. Logout -->
+      <button id="logoutBtn" class="button button-ghost button-sm" title="Sign out of account">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Main Profile Layout -->
+  <main class="profile-shell">
+    <div class="profile-header-banner">
+      <div class="banner-user-info">
+        <div class="avatar-edit-wrapper">
+          <img id="profileUserAvatar" class="profile-avatar-large" src="/css/avatar-placeholder.svg" alt="Profile Avatar">
+          <label class="avatar-change-floating-btn" title="Change profile picture">
+            <span>📷</span>
+            <input id="avatarFileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+          </label>
+        </div>
+        <div class="banner-text-details">
+          <div class="banner-name-row">
+            <h1 id="bannerUserName">Loading account...</h1>
+            <span id="bannerRoleBadge" class="profile-role-pill">Customer</span>
+          </div>
+          <p id="bannerUserEmail" class="banner-email">loading@example.com</p>
+          <div class="banner-stats-row">
+            <span>📦 <strong id="bannerAddressCount">0</strong> Saved Addresses</span>
+            <span>•</span>
+            <span>📅 Member on BookOnl</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-grid-layout">
+      <!-- Left Column: Personal Information Form -->
+      <section class="profile-card">
+        <div class="card-head">
+          <div class="head-title">
+            <span class="card-icon">👤</span>
+            <h2>Personal Information</h2>
+          </div>
+          <span class="card-badge">Profile</span>
+        </div>
+        <p class="card-desc">Update your personal identity, contact telephone, and primary preferences.</p>
+
+        <form id="profileDetailsForm" class="standard-form">
+          <div class="form-group">
+            <label for="inputFullName">
+              <span>Full Name <b class="req">*</b></span>
+              <input id="inputFullName" name="name" type="text" required minlength="2" placeholder="e.g. Eleanor Vance">
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="inputEmailDisabled">
+              <span>Registered Email (Account ID)</span>
+              <input id="inputEmailDisabled" type="email" disabled class="input-disabled" title="Email address cannot be changed">
+            </label>
+            <small class="field-hint">Primary email used for order confirmations and receipts.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="inputPrimaryPhone">
+              <span>Primary Contact Phone</span>
+              <input id="inputPrimaryPhone" name="phone" type="tel" placeholder="+1 (555) 000-0000">
+            </label>
+            <small class="field-hint">Used by delivery couriers to contact you upon order arrival.</small>
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" id="saveProfileBtn" class="button button-primary">
+              Save Profile Changes
+            </button>
+            <p id="profileFormMsg" class="form-message"></p>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Multi-Address Management -->
+      <section class="profile-card">
+        <div class="card-head">
+          <div class="head-title">
+            <span class="card-icon">📍</span>
+            <h2>Delivery Address Book</h2>
+          </div>
+          <button type="button" id="openAddAddressModalBtn" class="button button-primary button-sm">
+            + Add New Address
+          </button>
+        </div>
+        <p class="card-desc">Manage multiple shipping destinations. Select your default address for one-click checkout.</p>
+
+        <!-- Addresses List Container -->
+        <div id="addressBookContainer" class="address-cards-stack">
+          <div class="loading-placeholder">Loading your delivery addresses...</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Add / Edit Address Modal -->
+  <div id="addressModal" class="modal" hidden>
+    <div class="modal-content address-modal-content">
+      <button id="closeAddressModal" class="close-button" aria-label="Close">×</button>
+      <p class="eyebrow">SHIPPING DESTINATION</p>
+      <h2 id="addressModalTitle">Add New Delivery Address</h2>
+      <p class="muted">Add a convenient shipping destination for faster checkout.</p>
+
+      <form id="addressForm" class="standard-form">
+        <div class="form-row-2">
+          <label>
+            <span>Address Label <b class="req">*</b></span>
+            <select id="addressLabelSelect" name="label">
+              <option value="Home">🏠 Home</option>
+              <option value="Office / Work">🏢 Office / Work</option>
+              <option value="Parents / Family">👨‍👩‍👧 Parents / Family</option>
+              <option value="Apartment / Dorm">🏬 Apartment / Dorm</option>
+              <option value="Other">📍 Other</option>
+            </select>
+          </label>
+          <label>
+            <span>Recipient Full Name <b class="req">*</b></span>
+            <input id="modalRecipientName" name="recipientName" required placeholder="e.g. John Doe">
+          </label>
+        </div>
+
+        <div class="form-row-2">
+          <label>
+            <span>Contact Phone Number <b class="req">*</b></span>
+            <input id="modalRecipientPhone" name="phone" type="tel" required placeholder="+1 (555) 000-0000">
+          </label>
+          <div class="checkbox-container-wrap">
+            <label class="custom-checkbox-label">
+              <input id="modalIsDefault" name="isDefault" type="checkbox" value="true">
+              <span>Set as default shipping address</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span>Detailed Street Address & Landmark <b class="req">*</b></span>
+            <textarea id="modalFullAddress" name="address" rows="3" required placeholder="Street address, building name, apartment/suite number, ward/district, city"></textarea>
+          </label>
+        </div>
+
+        <div class="form-actions-row">
+          <button type="submit" id="saveAddressBtn" class="button button-primary button-block button-lg">
+            Save Shipping Address
+          </button>
+          <p id="addressFormMsg" class="form-message"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/js/profile.js"></script>
+</body>
+</html>

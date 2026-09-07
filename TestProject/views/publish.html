@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Publish a Book | BookOnl Studio</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="studio-page">
+  <header class="site-header studio-header">
+    <div class="header-brand-wrap">
+      <a class="brand" href="/">
+        <span class="brand-logo-icon">📖</span>
+        <span>BOOK<span>ONL</span></span>
+      </a>
+      <span class="brand-subtitle">STUDIO</span>
+    </div>
+
+    <div class="dash-header-center">
+      <span class="dash-greeting">Seller Listing Workspace</span>
+    </div>
+
+    <div class="header-actions">
+      <!-- 1. Sell a Book (active) -->
+      <a href="/publish" class="header-nav-btn publish-nav-btn is-active" id="topPublishBtn" title="Publish new book listing">
+        <span>✍️ Sell a Book</span>
+      </a>
+
+      <!-- 2. Dashboard -->
+      <a href="/dashboard" class="header-nav-btn dashboard-nav-btn" id="topDashboardBtn" title="Management Dashboard">
+        <span>📊 Dashboard</span>
+      </a>
+
+      <!-- 3. Storefront -->
+      <a href="/" class="header-nav-btn store-nav-btn" title="Browse Book Store">
+        <span>🏪 Storefront</span>
+      </a>
+
+      <!-- 4. Profile -->
+      <a href="/profile" class="header-nav-btn profile-nav-btn" id="topProfileBtn" title="My Profile & Settings">
+        <span>👤 My Profile</span>
+      </a>
+
+      <!-- 5. Logout -->
+      <button id="studioLogoutBtn" class="button button-ghost button-sm" title="Sign out">Sign out</button>
+    </div>
+  </header>
+
+  <main class="studio-shell">
+    <div class="studio-grid">
+      <!-- Left Column: Book Listing Form -->
+      <div class="studio-form-col">
+        <div class="studio-card">
+          <div class="card-header">
+            <p class="eyebrow">SELLER WORKSPACE</p>
+            <h1>Publish New Book Listing</h1>
+            <p class="muted">Create an elegant listing to showcase your work and reach thousands of passionate readers.</p>
+          </div>
+
+          <form id="publishForm" class="studio-form">
+            <!-- 1. Basic Metadata -->
+            <fieldset class="form-section">
+              <legend>1. Book Information</legend>
+              <div class="form-row-2">
+                <label>
+                  <span>Book Title <b class="req">*</b></span>
+                  <input id="inputTitle" name="title" required placeholder="e.g. The Great Gatsby, Dune...">
+                </label>
+                <label>
+                  <span>Author <b class="req">*</b></span>
+                  <input id="inputAuthor" name="author" required placeholder="e.g. F. Scott Fitzgerald">
+                </label>
+              </div>
+
+              <div class="form-row-3">
+                <label>
+                  <span>Publisher</span>
+                  <input id="inputPublisher" name="publisher" placeholder="Penguin, HarperCollins...">
+                </label>
+                <label>
+                  <span>Format</span>
+                  <select id="inputFormat" name="format">
+                    <option value="Paperback">Paperback</option>
+                    <option value="Hardcover">Hardcover</option>
+                    <option value="Ebook">E-Book</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Language</span>
+                  <input id="inputLanguage" name="language" value="English" placeholder="English, French, etc.">
+                </label>
+              </div>
+            </fieldset>
+
+            <!-- 2. Searchable Category Picker -->
+            <!-- 2. Searchable Multi-Category Picker -->
+            <fieldset class="form-section">
+              <div class="section-heading-row">
+                <legend>2. Categories & Subjects <b class="req">*</b></legend>
+                <span class="selected-cat-counter" id="selectedCatCounter">0 selected</span>
+              </div>
+              <p class="field-hint">Select one or multiple genres that best describe your book. Click tags to add or remove.</p>
+              
+              <!-- Quick pills -->
+              <div class="category-quick-pills" id="quickCategoryPills">
+                <span class="pill-label">Popular genres:</span>
+                <!-- Filled dynamically via JS -->
+              </div>
+
+              <!-- Selected Category Chips Display -->
+              <div id="selectedCategoriesWrap" class="selected-categories-wrap" hidden>
+                <div id="selectedCategoryChips" class="selected-chips-list"></div>
+                <button type="button" id="clearAllCategoriesBtn" class="clear-all-cats-btn">Clear all</button>
+              </div>
+
+              <!-- Searchable Category Combobox -->
+              <div class="category-combobox-wrap">
+                <div class="category-search-input-box">
+                  <span class="search-ico">🔍</span>
+                  <input type="text" id="categorySearchInput" placeholder="Type to search and add more genres (e.g. fiction, manga, business, sci-fi...)" autocomplete="off">
+                  <button type="button" id="clearCategoryBtn" class="clear-input-btn" hidden title="Clear search">✕</button>
+                </div>
+
+                <!-- Dropdown list -->
+                <div id="categoryDropdownList" class="category-dropdown-menu" hidden>
+                  <!-- Dynamically rendered -->
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- 3. Pricing & Inventory -->
+            <fieldset class="form-section">
+              <legend>3. Pricing & Inventory</legend>
+              <div class="form-row-3">
+                <label>
+                  <span>Listing Price ($) <b class="req">*</b></span>
+                  <input id="inputPrice" name="price" type="number" min="0" step="0.01" required placeholder="18.99">
+                </label>
+                <label>
+                  <span>Original Price ($)</span>
+                  <input id="inputOriginalPrice" name="originalPrice" type="number" min="0" step="0.01" placeholder="24.99">
+                </label>
+                <label>
+                  <span>Stock Quantity <b class="req">*</b></span>
+                  <input id="inputStock" name="stock" type="number" min="0" required placeholder="25">
+                </label>
+              </div>
+              <div id="discountIndicator" class="discount-indicator" hidden>
+                Buyer savings discount: <strong id="discountValue">0%</strong>
+              </div>
+            </fieldset>
+
+            <!-- 4. Cover & Images Upload -->
+            <fieldset class="form-section">
+              <legend>4. Book Artwork & Gallery <b class="req">*</b></legend>
+              <p class="field-hint">Drag and drop multiple images. The first image is set as the primary cover display.</p>
+              
+              <label id="imageDropzone" class="studio-dropzone">
+                <input id="bookImagesInput" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+                <div class="dropzone-inner">
+                  <div class="upload-icon-circle">↑</div>
+                  <div class="drop-text">
+                    <strong>Drag and drop images here, or click to browse</strong>
+                    <small>Supports PNG, JPG, WEBP (up to 10MB per file)</small>
+                  </div>
+                </div>
+              </label>
+
+              <div id="imageGalleryPreview" class="studio-gallery-preview"></div>
+            </fieldset>
+
+            <!-- 5. Description -->
+            <fieldset class="form-section">
+              <legend>5. Synopsis & Book Overview</legend>
+              <label>
+                <span>Editorial summary or excerpt</span>
+                <textarea id="inputDescription" name="description" rows="5" placeholder="Share key themes, character arcs, blurbs, or reviews that give readers insight into this title..."></textarea>
+              </label>
+              <div class="char-count"><span id="descCharCount">0</span> characters</div>
+            </fieldset>
+
+            <!-- Action buttons -->
+            <div class="form-footer-actions">
+              <button id="submitPublishBtn" class="button button-primary button-lg" type="submit">
+                <span class="btn-text">Publish Book Listing</span>
+              </button>
+              <a href="/dashboard" class="button button-outline button-lg">Cancel</a>
+              <p id="publishFormMessage" class="form-message"></p>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Storefront Card Preview & Tips -->
+      <aside class="studio-preview-col">
+        <div class="preview-sticky-wrap">
+          <div class="preview-card-wrapper">
+            <div class="preview-header">
+              <span class="pulse-dot"></span>
+              <h3>Live Storefront Preview</h3>
+            </div>
+            
+            <!-- Realistic Book Card Preview -->
+            <div class="preview-book-card-container">
+              <article class="book-card live-book-card">
+                <div class="cover-frame">
+                  <img id="previewCover" src="/css/avatar-placeholder.svg" alt="Cover preview">
+                  <span class="book-badge" id="previewBadge">New Release</span>
+                  <span class="live-discount-tag" id="previewDiscountTag" hidden>-25%</span>
+                </div>
+                <div class="book-info">
+                  <div class="preview-cat-chips-list" id="previewCatChipsList">
+                    <span class="preview-cat-chip">Category Unselected</span>
+                  </div>
+                  <h3 id="previewTitle">Your Book Title Here</h3>
+                  <p id="previewAuthor">Author Name</p>
+                  <div class="book-meta">
+                    <div class="price-wrap">
+                      <strong id="previewPrice">$0.00</strong>
+                      <del id="previewOldPrice" hidden>$0.00</del>
+                    </div>
+                    <span id="previewStock">0 in stock</span>
+                  </div>
+                  <button class="add-cart preview-action-btn" type="button" disabled>Add to cart</button>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Seller Tips Card -->
+          <div class="seller-tips-card">
+            <h4>💡 High-Converting Seller Tips:</h4>
+            <ul>
+              <li><strong>High-Resolution Artwork:</strong> Clean cover photos increase customer click-through by over 40%.</li>
+              <li><strong>Accurate Genre Tagging:</strong> Selecting the correct category ensures targeted recommendations.</li>
+              <li><strong>Engaging Synopsis:</strong> Highlight the emotional core or practical takeaways to encourage checkout.</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/js/publish.js"></script>
+</body>
+</html>
