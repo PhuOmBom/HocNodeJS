@@ -20,12 +20,35 @@ function publicUser(user) {
 async function registerUser({ name, email, password, phone = '', address = '' }) {
   if (!name || !email || !password) throw Object.assign(new Error('Name, email and password are required.'), { statusCode: 400 });
   if (password.length < 6) throw Object.assign(new Error('Password must contain at least 6 characters.'), { statusCode: 400 });
+  
+  const trimmedEmail = email.toLowerCase().trim();
   const trimmedPhone = phone.trim();
   const trimmedAddress = address.trim();
-  if (!trimmedPhone && !trimmedAddress) {
-    throw Object.assign(new Error('Please provide at least a contact phone number or shipping address for order delivery.'), { statusCode: 400 });
+
+  // Email format check
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    throw Object.assign(new Error('Invalid email format.'), { statusCode: 400 });
   }
-  if (await User.exists({ email: email.toLowerCase().trim() })) throw Object.assign(new Error('This email is already registered.'), { statusCode: 409 });
+
+  // Phone number is required and must be unique
+  if (!trimmedPhone) {
+    throw Object.assign(new Error('Phone number is required for registration.'), { statusCode: 400 });
+  }
+
+  const phoneDigitsOnly = trimmedPhone.replace(/[\s\-\(\)\.]/g, '');
+  if (!/^(0|\+84)?[0-9]{8,11}$/.test(phoneDigitsOnly) && !/^[0-9]{9,15}$/.test(phoneDigitsOnly)) {
+    throw Object.assign(new Error('Invalid phone number format (must contain 9-11 digits).'), { statusCode: 400 });
+  }
+
+  // Check email uniqueness
+  if (await User.exists({ email: trimmedEmail })) {
+    throw Object.assign(new Error('Email này đã được đăng ký tài khoản khác (This email is already registered).'), { statusCode: 409 });
+  }
+
+  // Check phone uniqueness
+  if (await User.exists({ phone: trimmedPhone })) {
+    throw Object.assign(new Error('Số điện thoại này đã được đăng ký tài khoản khác (This phone number is already registered).'), { statusCode: 409 });
+  }
   
   const shippingAddresses = [];
   if (trimmedAddress) {
@@ -40,7 +63,7 @@ async function registerUser({ name, email, password, phone = '', address = '' })
 
   await User.create({
     name: name.trim(),
-    email: email.toLowerCase().trim(),
+    email: trimmedEmail,
     password,
     role: 'customer',
     phone: trimmedPhone,
@@ -66,7 +89,16 @@ async function updateProfile(user, { name, avatar, phone, address, shippingAddre
   if (avatar && (!avatar.startsWith('data:image/') || avatar.length > 14 * 1024 * 1024)) throw Object.assign(new Error('Invalid image or image is larger than 10MB.'), { statusCode: 400 });
   user.name = name.trim();
   if (avatar !== undefined) user.avatar = avatar;
-  if (phone !== undefined) user.phone = phone.trim();
+  if (phone !== undefined) {
+    const trimmedPhone = phone.trim();
+    if (trimmedPhone && trimmedPhone !== user.phone) {
+      const phoneExists = await User.exists({ phone: trimmedPhone, _id: { $ne: user._id } });
+      if (phoneExists) {
+        throw Object.assign(new Error('Số điện thoại này đã được đăng ký tài khoản khác (This phone number is already registered).'), { statusCode: 409 });
+      }
+    }
+    user.phone = trimmedPhone;
+  }
   if (address !== undefined) user.address = address.trim();
   if (Array.isArray(shippingAddresses)) user.shippingAddresses = shippingAddresses;
   await user.save();

@@ -9,7 +9,15 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'customer', 'seller', 'admin'], default: 'customer' },
   status: { type: String, enum: ['logged_in', 'offline'], default: 'offline' },
   avatar: { type: String, default: '' },
-  phone: { type: String, trim: true, default: '' },
+  phone: {
+    type: String,
+    trim: true,
+    default: '',
+    index: {
+      unique: true,
+      partialFilterExpression: { phone: { $type: 'string', $gt: '' } }
+    }
+  },
   address: { type: String, trim: true, default: '' },
   shippingAddresses: [{
     label: { type: String, default: 'Nhà riêng' },

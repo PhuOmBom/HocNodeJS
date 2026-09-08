@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Category = require('../models/Category');
+const User = require('../models/User');
 
 async function autoSeedCategories() {
   try {
@@ -19,6 +20,7 @@ async function connectDatabase() {
   await mongoose.connect(uri);
   console.log(`MongoDB connected: ${uri}`);
   await autoSeedCategories();
+  await User.syncIndexes().catch((err) => console.warn('User syncIndexes warning:', err.message));
 }
 
 module.exports = connectDatabase;
