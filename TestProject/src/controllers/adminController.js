@@ -41,6 +41,16 @@ async function role(req, res, next) {
 	}
 }
 
+async function deleteUser(req, res, next) {
+	try {
+		const user = await adminService.deleteUser(req.params.userID);
+		if (!user) return res.status(404).json({ message: 'User not found or protected.' });
+		res.json({ message: 'User deleted successfully.', user });
+	} catch (error) {
+		next(error);
+	}
+}
+
 async function sellerDashboard(req, res, next) {
 	try {
 		res.json(await adminService.sellerMetrics(req.user.userID));
@@ -49,4 +59,4 @@ async function sellerDashboard(req, res, next) {
 	}
 }
 
-module.exports = { overview, users, ban, role, sellerDashboard };
+module.exports = { overview, users, ban, role, deleteUser, sellerDashboard };

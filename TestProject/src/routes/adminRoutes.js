@@ -8,4 +8,5 @@ router.get('/overview', controller.overview);
 router.get('/users', controller.users);
 router.patch('/users/:userID/ban', controller.ban);
 router.patch('/users/:userID/role', controller.role);
+router.delete('/users/:userID', controller.deleteUser);
 module.exports = router;

@@ -643,6 +643,9 @@ async function loadUsers() {
                   <button class="btn-table-ban ${u.isBanned ? 'is-unban' : ''}" data-ban-user="${u.userID}" data-current-ban="${u.isBanned}">
                     ${u.isBanned ? 'Unsuspend' : 'Suspend'}
                   </button>
+                  <button class="btn-table-delete" data-delete-user="${u.userID}" data-user-name="${u.name}" title="Xóa tài khoản này" style="margin-left: 6px;">
+                    Delete
+                  </button>
                 ` : '<span class="admin-protected-badge">Protected</span>'}
               </td>
             </tr>
@@ -663,6 +666,25 @@ async function loadUsers() {
             body: JSON.stringify({ isBanned: !isBanned })
           });
           toast('User status updated successfully!');
+          loadUsers();
+        } catch (err) {
+          alert(err.message);
+          btn.disabled = false;
+        }
+      });
+    });
+
+    // Delete user
+    container.querySelectorAll('[data-delete-user]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const name = btn.dataset.userName || 'this user';
+        if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản "${name}" không? Thao tác này không thể hoàn tác.`)) return;
+        btn.disabled = true;
+        try {
+          await request(`/api/admin/users/${btn.dataset.deleteUser}`, {
+            method: 'DELETE'
+          });
+          toast(`Đã xóa tài khoản "${name}" thành công!`);
           loadUsers();
         } catch (err) {
           alert(err.message);
