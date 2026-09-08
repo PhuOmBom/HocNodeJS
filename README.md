@@ -1,18 +1,23 @@
-# Bookstore Marketplace (TestProject)
+# Học NodeJS - Dự án Bookstore Marketplace
 
-Dự án website thương mại điện tử mua bán sách trực tuyến xây dựng bằng **Node.js**, **Express**, **MongoDB (Mongoose)** và **Vanilla HTML/CSS/JS**.
+Kho lưu trữ bài tập và dự án thực hành Node.js. Dự án trọng tâm là **TestProject** - Hệ thống website thương mại điện tử mua bán sách trực tuyến hoàn chỉnh.
 
 ---
 
 ## 1. Cài đặt & Cấu hình môi trường
 
-1. **Cài đặt thư viện phụ thuộc:**
+1. **Di chuyển vào thư mục dự án:**
+   ```bash
+   cd TestProject
+   ```
+
+2. **Cài đặt thư viện phụ thuộc:**
    ```bash
    npm install
    ```
 
-2. **Tạo file cấu hình môi trường `.env`:**
-   Tạo file `.env` ở thư mục gốc `TestProject/` (hoặc sao chép từ `.env.example`) và điền các thông tin:
+3. **Tạo file cấu hình môi trường `.env`:**
+   Tạo file `.env` ở thư mục `TestProject/` (hoặc sao chép từ `.env.example`) và điền các thông tin:
    ```env
    PORT=3000
    CLIENT_URL=http://localhost:3000
@@ -25,7 +30,7 @@ Dự án website thương mại điện tử mua bán sách trực tuyến xây 
 
 ## 2. Tạo tài khoản Admin để Test
 
-Để tạo tài khoản quản trị viên (Admin) hoặc nâng cấp một tài khoản có sẵn lên quyền Admin, bạn chạy script sau trong terminal:
+Để tạo tài khoản quản trị viên (Admin) hoặc nâng cấp một tài khoản có sẵn lên quyền Admin:
 
 ### Cách 1: Chạy tương tác (Interactive prompt)
 ```bash
@@ -40,10 +45,6 @@ Sau đó nhập lần lượt:
 ```bash
 node scripts/createAdmin.js "Admin" "admin@example.com" "123456"
 ```
-
-> **Ghi chú:**
-> - Nếu email đã tồn tại trong database, hệ thống sẽ tự động cập nhật role thành `admin` và đặt lại mật khẩu mới.
-> - Nếu email chưa tồn tại, hệ thống sẽ tạo mới tài khoản admin.
 
 ---
 
