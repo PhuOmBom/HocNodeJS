@@ -38,6 +38,7 @@ app.get('/book-detail', (req, res) => res.sendFile(path.join(__dirname, '..', 'v
 app.get('/book/:id', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'book-detail.html')));
 app.get('/category', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'category.html')));
 app.get('/category/:id', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'category.html')));
+app.get('/search', (req, res) => res.sendFile(path.join(__dirname, '..', 'views', 'category.html')));
 app.use(errorMiddleware);
 
 module.exports = app;

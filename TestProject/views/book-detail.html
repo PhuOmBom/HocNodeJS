@@ -34,13 +34,32 @@
       <span class="brand-subtitle">MARKETPLACE</span>
     </div>
 
-    <!-- Center Search Bar -->
+    <!-- Center Search Bar with Multi-Genre Filter -->
     <div class="header-search-container">
-      <form id="searchForm" class="search-bar" action="/">
+      <form id="searchForm" class="search-bar" action="/search">
         <span class="search-icon" aria-hidden="true">⌕</span>
-        <input id="searchInput" name="search" placeholder="Search by title, author, keyword, ISBN..." aria-label="Search books">
-        <button type="submit" class="search-submit" aria-label="Search">↵</button>
+        <input id="searchInput" name="q" placeholder="Search by title, author, keyword, ISBN..." aria-label="Search books" autocomplete="off">
+        <span id="searchGenreBadge" class="search-genre-badge" hidden>0 genres</span>
+        <button type="submit" class="search-submit" aria-label="Search" title="Press Enter to search">↵</button>
       </form>
+      <!-- Multi-Genre Popup Dropdown -->
+      <div id="searchGenreDropdown" class="search-genre-dropdown" hidden>
+        <div class="genre-dropdown-header">
+          <div class="genre-dropdown-title">
+            <span>🏷️ Filter by Genres</span>
+            <small id="genreSelectedCount">(0 selected)</small>
+          </div>
+          <div class="genre-dropdown-actions">
+            <button type="button" id="genreSelectAllBtn" class="genre-action-btn">Select All</button>
+            <button type="button" id="genreClearBtn" class="genre-action-btn">Clear</button>
+          </div>
+        </div>
+        <div id="genrePillGrid" class="genre-pill-grid"></div>
+        <div class="genre-dropdown-footer">
+          <small class="genre-hint-text">💡 Tip: Press <b>Enter</b> to search (with or without text)</small>
+          <button type="button" id="applySearchBtn" class="button button-primary button-sm">Search Now ↵</button>
+        </div>
+      </div>
     </div>
 
     <!-- Header Actions -->
@@ -336,6 +355,7 @@
   <div id="toast" class="toast" hidden></div>
 
   <script src="/js/avatarHandler.js"></script>
+  <script src="/js/searchHandler.js"></script>
   <script src="/js/book-detail.js"></script>
 </body>
 </html>

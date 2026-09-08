@@ -140,90 +140,369 @@ async function loadOverview() {
   }
 }
 
+// 2. Load Books Inventory & Dashboard Search/Edit
+let allInventoryBooks = [];
+let inventoryCategories = [];
+let dashSelectedGenres = new Set();
+let isEditModalInitialized = false;
+
+async function loadCategoriesForDashboard() {
+  if (inventoryCategories.length) return inventoryCategories;
+  try {
+    const res = await request('/api/categories');
+    inventoryCategories = res.categories || [];
+  } catch (e) {
+    inventoryCategories = [];
+  }
+  return inventoryCategories;
+}
+
+function renderDashGenrePills() {
+  const container = document.querySelector('#dashGenreList');
+  const countBadge = document.querySelector('#dashGenreCount');
+  if (!container) return;
+
+  if (countBadge) {
+    countBadge.hidden = dashSelectedGenres.size === 0;
+    countBadge.textContent = dashSelectedGenres.size;
+  }
+
+  container.innerHTML = inventoryCategories.map((c) => {
+    const isSelected = dashSelectedGenres.has(c.name);
+    return `
+      <button type="button" class="dash-genre-pill ${isSelected ? 'is-selected' : ''}" data-genre="${c.name}">
+        <span>${isSelected ? '✓' : '+'}</span>
+        <span>${c.name}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.dash-genre-pill').forEach((btn) => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const g = btn.dataset.genre;
+      if (dashSelectedGenres.has(g)) {
+        dashSelectedGenres.delete(g);
+      } else {
+        dashSelectedGenres.add(g);
+      }
+      renderDashGenrePills();
+      filterAndRenderInventory();
+    };
+  });
+}
+
+function filterAndRenderInventory() {
+  const searchVal = document.querySelector('#dashBookSearchInput')?.value.trim().toLowerCase() || '';
+  const statsPill = document.querySelector('#dashInventoryStats');
+
+  let list = [...allInventoryBooks];
+
+  // Text filter
+  if (searchVal) {
+    list = list.filter((b) => {
+      const title = (b.title || '').toLowerCase();
+      const author = (b.author || '').toLowerCase();
+      const publisher = (b.publisher || '').toLowerCase();
+      const isbn = (b.isbn || '').toLowerCase();
+      return title.includes(searchVal) || author.includes(searchVal) || publisher.includes(searchVal) || isbn.includes(searchVal);
+    });
+  }
+
+  // Genre multi-select filter
+  if (dashSelectedGenres.size > 0) {
+    list = list.filter((b) => {
+      const primaryCatName = b.category?.name || '';
+      const allCatNames = (b.categories || []).map((c) => c.name || '');
+      return dashSelectedGenres.has(primaryCatName) || allCatNames.some((n) => dashSelectedGenres.has(n));
+    });
+  }
+
+  if (statsPill) {
+    statsPill.textContent = `Showing ${list.length} of ${allInventoryBooks.length} titles`;
+  }
+
+  renderInventoryTable(list);
+}
+
+function renderInventoryTable(list) {
+  const container = document.querySelector('#booksInventoryTable');
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="empty-dash-state">
+        <p>No book listings matched your search / filter criteria.</p>
+        <button type="button" class="button button-outline button-sm" onclick="resetDashBookFilters()">Reset All Filters</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th style="width: 70px;">Cover</th>
+          <th>Title & Author</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Inventory</th>
+          <th>Sold</th>
+          <th style="text-align: right; width: 140px;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((b) => `
+          <tr data-row-book-id="${b._id}">
+            <td>
+              <img class="table-book-thumb" src="${b.cover || '/css/avatar-placeholder.svg'}" alt="${b.title}" onerror="this.onerror=null; this.src='/css/avatar-placeholder.svg';">
+            </td>
+            <td>
+              <strong>${b.title}</strong>
+              <span class="table-subtext">${b.author || 'Unknown author'}${b.publisher ? ` • ${b.publisher}` : ''}</span>
+            </td>
+            <td>
+              <span class="cat-pill">${b.category?.name || 'General'}</span>
+            </td>
+            <td><strong>${money(b.price)}</strong></td>
+            <td>
+              <span class="stock-badge ${b.stock > 5 ? 'in-stock' : b.stock > 0 ? 'low-stock' : 'out-stock'}">
+                ${b.stock > 0 ? `${b.stock} in stock` : 'Out of stock'}
+              </span>
+            </td>
+            <td><strong>${b.sold || 0}</strong></td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button type="button" class="btn-table-edit" data-edit-book="${b._id}" title="Edit book details">✏️ Edit</button>
+              <button type="button" class="btn-table-delete" data-delete-book="${b._id}" title="Remove title">🗑️ Delete</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // Wire Edit button
+  container.querySelectorAll('[data-edit-book]').forEach((btn) => {
+    btn.onclick = () => {
+      const bId = btn.dataset.editBook;
+      const book = allInventoryBooks.find((x) => x._id === bId);
+      if (book) openEditBookModal(book);
+    };
+  });
+
+  // Wire Delete button
+  container.querySelectorAll('[data-delete-book]').forEach((btn) => {
+    btn.onclick = async () => {
+      if (!confirm('Are you sure you want to permanently remove this book listing?')) return;
+      btn.disabled = true;
+      try {
+        await request(`/api/books/${btn.dataset.deleteBook}`, { method: 'DELETE' });
+        toast('Listing deleted successfully.');
+        loadBooksInventory();
+      } catch (err) {
+        alert(err.message);
+        btn.disabled = false;
+      }
+    };
+  });
+}
+
+function resetDashBookFilters() {
+  const searchInput = document.querySelector('#dashBookSearchInput');
+  if (searchInput) searchInput.value = '';
+  dashSelectedGenres.clear();
+  renderDashGenrePills();
+  filterAndRenderInventory();
+}
+window.resetDashBookFilters = resetDashBookFilters;
+
+function setupDashboardBookFilters() {
+  const searchInput = document.querySelector('#dashBookSearchInput');
+  const toggleBtn = document.querySelector('#dashGenreDropdownBtn');
+  const popover = document.querySelector('#dashGenrePopover');
+  const selectAllBtn = document.querySelector('#dashGenreSelectAll');
+  const clearBtn = document.querySelector('#dashGenreClear');
+  const filterSubmit = document.querySelector('#dashBookFilterSubmit');
+  const resetBtn = document.querySelector('#dashBookResetBtn');
+
+  // Genre dropdown toggle
+  toggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (popover) popover.hidden = !popover.hidden;
+  });
+
+  document.addEventListener('click', (e) => {
+    if (popover && !popover.contains(e.target) && e.target !== toggleBtn) {
+      popover.hidden = true;
+    }
+  });
+
+  // Select all / Clear genres
+  selectAllBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    inventoryCategories.forEach((c) => dashSelectedGenres.add(c.name));
+    renderDashGenrePills();
+    filterAndRenderInventory();
+  });
+
+  clearBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dashSelectedGenres.clear();
+    renderDashGenrePills();
+    filterAndRenderInventory();
+  });
+
+  // Search input typing & Enter
+  searchInput?.addEventListener('input', () => {
+    filterAndRenderInventory();
+  });
+
+  searchInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      filterAndRenderInventory();
+    }
+  });
+
+  filterSubmit?.addEventListener('click', () => {
+    filterAndRenderInventory();
+  });
+
+  resetBtn?.addEventListener('click', resetDashBookFilters);
+}
+
+// 2.1 Edit Book Modal Functions
+function openEditBookModal(book) {
+  const modal = document.querySelector('#editBookModal');
+  const categorySelect = document.querySelector('#editBookCategory');
+  const msg = document.querySelector('#editBookMessage');
+  if (!modal) return;
+
+  if (msg) {
+    msg.hidden = true;
+    msg.textContent = '';
+  }
+
+  // Populate category options
+  if (categorySelect) {
+    categorySelect.innerHTML = `
+      <option value="">Select Category...</option>
+      ${inventoryCategories.map((c) => `
+        <option value="${c._id}" ${c._id === (book.category?._id || book.category) ? 'selected' : ''}>${c.name}</option>
+      `).join('')}
+    `;
+  }
+
+  document.querySelector('#editBookId').value = book._id || '';
+  document.querySelector('#editBookTitle').value = book.title || '';
+  document.querySelector('#editBookAuthor').value = book.author || '';
+  document.querySelector('#editBookPrice').value = book.price ?? '';
+  document.querySelector('#editBookStock').value = book.stock ?? 0;
+  document.querySelector('#editBookPublisher').value = book.publisher || '';
+  document.querySelector('#editBookYear').value = book.publishedYear || '';
+  document.querySelector('#editBookDescription').value = book.description || '';
+  document.querySelector('#editBookCoverUrl').value = book.cover || '';
+  document.querySelector('#editCoverPreview').src = book.cover || '/css/avatar-placeholder.svg';
+
+  modal.hidden = false;
+}
+
+function setupEditBookModal() {
+  if (isEditModalInitialized) return;
+  isEditModalInitialized = true;
+
+  const modal = document.querySelector('#editBookModal');
+  const closeBtn = document.querySelector('#closeEditBookModal');
+  const cancelBtn = document.querySelector('#cancelEditBookBtn');
+  const form = document.querySelector('#editBookForm');
+  const coverInput = document.querySelector('#editBookCoverUrl');
+  const coverPreview = document.querySelector('#editCoverPreview');
+  const msg = document.querySelector('#editBookMessage');
+
+  const closeModal = () => {
+    if (modal) modal.hidden = true;
+  };
+
+  closeBtn?.addEventListener('click', closeModal);
+  cancelBtn?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  coverInput?.addEventListener('input', () => {
+    if (coverPreview) {
+      coverPreview.src = coverInput.value.trim() || '/css/avatar-placeholder.svg';
+    }
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const bookId = document.querySelector('#editBookId').value;
+    const saveBtn = document.querySelector('#saveEditBookBtn');
+    if (!bookId) return;
+
+    const payload = {
+      title: document.querySelector('#editBookTitle').value.trim(),
+      author: document.querySelector('#editBookAuthor').value.trim(),
+      category: document.querySelector('#editBookCategory').value,
+      price: Number(document.querySelector('#editBookPrice').value),
+      stock: Number(document.querySelector('#editBookStock').value),
+      publisher: document.querySelector('#editBookPublisher').value.trim(),
+      publishedYear: Number(document.querySelector('#editBookYear').value) || undefined,
+      description: document.querySelector('#editBookDescription').value.trim(),
+      cover: document.querySelector('#editBookCoverUrl').value.trim()
+    };
+
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+    }
+
+    try {
+      await request(`/api/books/${bookId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      });
+      toast('Book details updated successfully!');
+      closeModal();
+      await loadBooksInventory();
+    } catch (err) {
+      if (msg) {
+        msg.hidden = false;
+        msg.textContent = err.message || 'Failed to update book.';
+      }
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save Changes';
+      }
+    }
+  });
+}
+
 // 2. Load Books Inventory
 async function loadBooksInventory() {
   const container = document.querySelector('#booksInventoryTable');
-  container.innerHTML = '<div class="table-loading">Loading inventory data...</div>';
+  if (container) container.innerHTML = '<div class="table-loading">Loading inventory data...</div>';
 
   try {
-    let list = [];
+    await loadCategoriesForDashboard();
+    setupDashboardBookFilters();
+    setupEditBookModal();
+    renderDashGenrePills();
+
     if (currentUser.role === 'admin') {
       const res = await request('/api/books');
-      list = res.books || [];
+      allInventoryBooks = res.books || [];
     } else {
       const res = await request('/api/seller-dashboard');
-      list = res.books || [];
+      allInventoryBooks = res.books || [];
     }
 
-    if (!list.length) {
-      container.innerHTML = `
-        <div class="empty-dash-state">
-          <p>You currently have no books in your inventory.</p>
-          <a href="/publish" class="button button-primary">Publish Your First Title →</a>
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = `
-      <table class="dash-table">
-        <thead>
-          <tr>
-            <th style="width: 70px;">Cover</th>
-            <th>Title & Author</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Inventory</th>
-            <th>Sold</th>
-            <th style="text-align: right;">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${list.map((b) => `
-            <tr>
-              <td>
-                <img class="table-book-thumb" src="${b.cover || '/css/avatar-placeholder.svg'}" alt="${b.title}">
-              </td>
-              <td>
-                <strong>${b.title}</strong>
-                <span class="table-subtext">${b.author || 'Unknown author'}</span>
-              </td>
-              <td>
-                <span class="cat-pill">${b.category?.name || 'General'}</span>
-              </td>
-              <td><strong>${money(b.price)}</strong></td>
-              <td>
-                <span class="stock-badge ${b.stock > 5 ? 'in-stock' : b.stock > 0 ? 'low-stock' : 'out-stock'}">
-                  ${b.stock > 0 ? `${b.stock} in stock` : 'Out of stock'}
-                </span>
-              </td>
-              <td><strong>${b.sold || 0}</strong></td>
-              <td style="text-align: right;">
-                <button class="btn-table-delete" data-delete-book="${b._id}" title="Remove title">Delete</button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-
-    // Wire delete button
-    container.querySelectorAll('[data-delete-book]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to remove this book listing?')) return;
-        btn.disabled = true;
-        try {
-          await request(`/api/books/${btn.dataset.deleteBook}`, { method: 'DELETE' });
-          toast('Listing deleted successfully.');
-          loadBooksInventory();
-        } catch (err) {
-          alert(err.message);
-          btn.disabled = false;
-        }
-      });
-    });
+    filterAndRenderInventory();
   } catch (err) {
-    container.innerHTML = `<p class="form-message error">${err.message}</p>`;
+    if (container) container.innerHTML = `<p class="form-message error">${err.message}</p>`;
   }
 }
 

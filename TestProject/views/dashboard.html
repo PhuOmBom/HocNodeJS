@@ -109,6 +109,38 @@
           </div>
           <a href="/publish" class="button button-primary">+ Add New Book</a>
         </div>
+
+        <!-- Dashboard Book Search & Multi-Genre Filter Toolbar -->
+        <div class="dash-book-filter-toolbar">
+          <div class="dash-search-input-wrap">
+            <span class="dash-search-icon">⌕</span>
+            <input id="dashBookSearchInput" type="text" placeholder="Search title, author, publisher, ISBN..." autocomplete="off">
+          </div>
+          
+          <div class="dash-genre-filter-wrap">
+            <button type="button" id="dashGenreDropdownBtn" class="dash-genre-btn">
+              <span>🏷️ Filter Genres</span>
+              <span id="dashGenreCount" class="dash-genre-count" hidden>0</span>
+              <span class="dash-caret">▾</span>
+            </button>
+            <div id="dashGenrePopover" class="dash-genre-popover" hidden>
+              <div class="dash-popover-top">
+                <span>Select Genres</span>
+                <div class="dash-popover-btns">
+                  <button type="button" id="dashGenreSelectAll" class="dash-mini-btn">All</button>
+                  <button type="button" id="dashGenreClear" class="dash-mini-btn">Clear</button>
+                </div>
+              </div>
+              <div id="dashGenreList" class="dash-genre-grid"></div>
+            </div>
+          </div>
+
+          <button type="button" id="dashBookFilterSubmit" class="button button-primary button-sm">Search</button>
+          <button type="button" id="dashBookResetBtn" class="button button-outline button-sm">Reset</button>
+
+          <div id="dashInventoryStats" class="dash-stats-pill">Loading...</div>
+        </div>
+
         <div id="booksInventoryTable" class="modern-table-container"></div>
       </div>
     </section>
@@ -154,6 +186,85 @@
       </div>
     </section>
   </main>
+
+  <!-- Edit Book Modal for Admin & Seller -->
+  <div id="editBookModal" class="modal-backdrop" hidden>
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" style="margin: 0 0 2px; color: var(--accent);">CATALOG MANAGEMENT</p>
+          <h2 id="editModalTitle">Edit Book Listing</h2>
+        </div>
+        <button id="closeEditBookModal" type="button" class="close-button" aria-label="Close modal">×</button>
+      </div>
+
+      <form id="editBookForm" class="dash-form">
+        <input type="hidden" id="editBookId" name="bookId">
+
+        <div class="form-row-2">
+          <label>
+            <span>Book Title *</span>
+            <input type="text" id="editBookTitle" name="title" required placeholder="e.g. Solo Leveling, Vol. 1">
+          </label>
+          <label>
+            <span>Author *</span>
+            <input type="text" id="editBookAuthor" name="author" required placeholder="e.g. Chugong">
+          </label>
+        </div>
+
+        <div class="form-row-3">
+          <label>
+            <span>Category / Genre *</span>
+            <select id="editBookCategory" name="category" required>
+              <option value="">Select Category...</option>
+            </select>
+          </label>
+          <label>
+            <span>Listing Price ($) *</span>
+            <input type="number" id="editBookPrice" name="price" step="0.01" min="0" required placeholder="14.99">
+          </label>
+          <label>
+            <span>Stock Inventory *</span>
+            <input type="number" id="editBookStock" name="stock" min="0" required placeholder="50">
+          </label>
+        </div>
+
+        <div class="form-row-2">
+          <label>
+            <span>Publisher</span>
+            <input type="text" id="editBookPublisher" name="publisher" placeholder="e.g. Yen Press">
+          </label>
+          <label>
+            <span>Published Year</span>
+            <input type="number" id="editBookYear" name="publishedYear" placeholder="2021">
+          </label>
+        </div>
+
+        <label>
+          <span>Description & Synopsis</span>
+          <textarea id="editBookDescription" name="description" rows="3" placeholder="Book overview, synopsis, edition info..."></textarea>
+        </label>
+
+        <div class="form-row-2" style="align-items: flex-start;">
+          <label style="flex: 1;">
+            <span>Cover Image URL (or file path)</span>
+            <input type="text" id="editBookCoverUrl" name="cover" placeholder="https://... or /images/books/...">
+          </label>
+          <div class="edit-cover-preview-box">
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Current Cover:</span>
+            <img id="editCoverPreview" src="/css/avatar-placeholder.svg" alt="Cover Preview" class="table-book-thumb" style="width: 54px; height: 75px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);">
+          </div>
+        </div>
+
+        <div id="editBookMessage" class="form-message" hidden></div>
+
+        <div class="modal-actions" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" id="cancelEditBookBtn" class="button button-outline">Cancel</button>
+          <button type="submit" id="saveEditBookBtn" class="button button-primary">💾 Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Toast -->
   <div id="toast" class="toast" hidden></div>

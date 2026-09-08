@@ -437,7 +437,57 @@ function applyFiltersAndSort() {
   renderAnimeBookGrid(filteredBooks);
 }
 
-// 6. Switch to a new category dynamically
+// 6. Search execution & dynamic category switching
+async function performSearch(queryTerm, genresParam) {
+  const grid = document.querySelector('#genreBooksGrid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="grid-loading">
+        <div class="spinner"></div>
+        <p>Searching book catalog...</p>
+      </div>
+    `;
+  }
+
+  const pageTitle = document.querySelector('#categoryPageTitle');
+  const breadcrumb = document.querySelector('#categoryBreadcrumbName');
+  const heroTitle = document.querySelector('#genreHeroTitle');
+  const heroDesc = document.querySelector('#genreHeroDesc');
+  const bookCount = document.querySelector('#genreBookCount');
+  const avgRating = document.querySelector('#genreAvgRating');
+
+  const titleText = queryTerm ? `Search: "${queryTerm}"` : (genresParam ? `Filtered: ${genresParam}` : 'Explore All Books');
+  if (pageTitle) pageTitle.textContent = `${titleText} | BookOnl Marketplace`;
+  if (breadcrumb) breadcrumb.textContent = 'Search & Explore';
+  if (heroTitle) heroTitle.textContent = titleText;
+  
+  let descText = 'Showing matching results';
+  if (queryTerm) descText += ` for keyword "${queryTerm}"`;
+  if (genresParam) descText += ` in genre(s): ${genresParam}`;
+  if (heroDesc) heroDesc.textContent = descText + '.';
+
+  renderCategoryPills(allCategories, null);
+
+  try {
+    const params = new URLSearchParams();
+    if (queryTerm) params.set('search', queryTerm);
+    if (genresParam) params.set('genres', genresParam);
+    
+    const bookData = await request(`/api/books?${params.toString()}`);
+    categoryBooks = bookData.books || [];
+    if (bookCount) bookCount.textContent = categoryBooks.length;
+    if (avgRating && categoryBooks.length) {
+      const sum = categoryBooks.reduce((acc, b) => acc + (b.rating || 4.8), 0);
+      avgRating.textContent = (sum / categoryBooks.length).toFixed(1);
+    }
+    applyFiltersAndSort();
+  } catch (err) {
+    if (grid) {
+      grid.innerHTML = `<div class="empty-genre-box"><p>Failed to load search results: ${err.message}</p></div>`;
+    }
+  }
+}
+
 async function switchCategory(categoryId) {
   const grid = document.querySelector('#genreBooksGrid');
   if (grid) {
@@ -477,13 +527,21 @@ async function initCategoryPage() {
     allCategories = [];
   }
 
-  let catId = getRequestedCategoryId();
-  if (!catId && allCategories.length > 0) {
-    catId = allCategories[0]._id;
-  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const q = urlParams.get('q') || urlParams.get('search') || '';
+  const genres = urlParams.get('genres') || urlParams.get('categories') || '';
+  const isSearchPath = window.location.pathname.startsWith('/search');
 
-  if (catId) {
-    await switchCategory(catId);
+  if (isSearchPath || q || genres) {
+    await performSearch(q, genres);
+  } else {
+    let catId = getRequestedCategoryId();
+    if (!catId && allCategories.length > 0) {
+      catId = allCategories[0]._id;
+    }
+    if (catId) {
+      await switchCategory(catId);
+    }
   }
 
   // Setup search & sort events
@@ -492,8 +550,15 @@ async function initCategoryPage() {
 
   // Handle browser back/forward
   window.addEventListener('popstate', () => {
-    const newId = getRequestedCategoryId() || (allCategories[0] && allCategories[0]._id);
-    if (newId) switchCategory(newId);
+    const params = new URLSearchParams(window.location.search);
+    const pQ = params.get('q') || params.get('search');
+    const pG = params.get('genres') || params.get('categories');
+    if (window.location.pathname.startsWith('/search') || pQ || pG) {
+      performSearch(pQ || '', pG || '');
+    } else {
+      const newId = getRequestedCategoryId() || (allCategories[0] && allCategories[0]._id);
+      if (newId) switchCategory(newId);
+    }
   });
 }
 

@@ -1053,12 +1053,6 @@ function setupStorefront() {
   document.querySelector('#clearFilterBtn')?.addEventListener('click', clearCategoryFilter);
   document.querySelector('#viewAllBooksBtn')?.addEventListener('click', clearCategoryFilter);
 
-  // Search
-  document.querySelector('#searchForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    loadCatalog(document.querySelector('#searchInput').value.trim());
-  });
-
   // Cart
   document.querySelector('#cartButton')?.addEventListener('click', openCartDrawer);
   document.querySelector('#closeCart')?.addEventListener('click', closeCartDrawer);
