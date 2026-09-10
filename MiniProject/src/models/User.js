@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
             required: true,
             minlength: [6, 'Pass min 6 nhé ae']
         },
-        role: {
+        status: {
             type: String,
             enum: {
                 values: ['active', 'inactive'],
@@ -29,6 +29,14 @@ const userSchema = new mongoose.Schema(
             },
             default: 'active',
         },
+        role: {
+            type: String,
+            enum: {
+                values: ['admin', 'hr', 'staff'],
+                message: '{VALUE} không phải vai trò hợp lệ'
+            },
+            default: 'staff',
+        }
     },
     {
         timestamps: true,
@@ -41,7 +49,7 @@ userSchema.pre('save', async function (next) {
 
     try {
         const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
         next();
     } catch (error) {
         next(error);
