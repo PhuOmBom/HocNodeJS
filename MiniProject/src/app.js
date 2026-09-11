@@ -14,13 +14,34 @@ app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
     res.status(200).json({
-        message: 'API quản lý nhân sự chạy ok'
+        success: true,
+        message: 'Hệ thống API Quản lý Nhân sự (HR Management System) đang hoạt động bình thường.',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth',
+            departments: '/api/departments',
+            positions: '/api/positions',
+            employees: '/api/employees',
+            attendances: '/api/attendances',
+            leaves: '/api/leaves',
+            dashboard: '/api/dashboard',
+        },
     });
 });
 
+// Mount Routes
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/departments', require('./routes/department.routes'));
+app.use('/api/positions', require('./routes/position.routes'));
+app.use('/api/employees', require('./routes/employee.routes'));
+app.use('/api/attendances', require('./routes/attendance.routes'));
+app.use('/api/leaves', require('./routes/leave.routes'));
+app.use('/api/dashboard', require('./routes/dashboard.routes'));
+
 app.use((req, res, next) => {
     res.status(404).json({
-        message: 'API ko tồn tại'
+        success: false,
+        message: `API không tồn tại: [${req.method}] ${req.originalUrl}`,
     });
 });
 
