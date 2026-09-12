@@ -66,15 +66,14 @@ async function runTests() {
     let createdPosId = '';
     let createdEmpId = '';
     let createdLeaveId = '';
+    const ts = Date.now();
 
     try {
-        // 1. Root healthcheck
         console.log('\n[1] Kiểm tra Root Endpoint:');
         const resRoot = await request('/');
         assert(resRoot.status === 200, 'Root endpoint trả về HTTP 200');
         assert(resRoot.body.success === true, 'Root message success là true');
 
-        // 2. Login Admin
         console.log('\n[2] Đăng nhập Admin:');
         const resLoginAdmin = await request('/api/auth/login', {
             method: 'POST',
@@ -85,7 +84,6 @@ async function runTests() {
         assert(resLoginAdmin.body.user.role === 'admin', 'Role của Admin chính xác');
         adminToken = resLoginAdmin.body.token;
 
-        // 3. Login Staff
         console.log('\n[3] Đăng nhập Staff:');
         const resLoginStaff = await request('/api/auth/login', {
             method: 'POST',
@@ -95,7 +93,6 @@ async function runTests() {
         assert(!!resLoginStaff.body.token, 'Nhận được JWT Token của Staff');
         staffToken = resLoginStaff.body.token;
 
-        // 4. Get Profile (Me)
         console.log('\n[4] Xem hồ sơ cá nhân qua Token:');
         const resMe = await request('/api/auth/me', {
             headers: { Authorization: `Bearer ${staffToken}` },
@@ -103,7 +100,6 @@ async function runTests() {
         assert(resMe.status === 200, 'Lấy thông tin profile thành công');
         assert(resMe.body.user.email === 'staff@hr.com', 'Thông tin user khớp với token');
 
-        // 5. Dashboard Stats
         console.log('\n[5] Thống kê tổng quan Dashboard:');
         const resDash = await request('/api/dashboard/stats', {
             headers: { Authorization: `Bearer ${adminToken}` },
@@ -112,14 +108,12 @@ async function runTests() {
         assert(resDash.body.summary.employees.total >= 4, 'Số lượng nhân viên >= 4');
         assert(resDash.body.summary.departments >= 4, 'Số lượng phòng ban >= 4');
 
-        // 6. Phân quyền (Staff gọi endpoint của Admin phải bị 403 Forbidden)
         console.log('\n[6] Kiểm tra Phân quyền (RBAC Security):');
         const resForbidden = await request('/api/dashboard/stats', {
             headers: { Authorization: `Bearer ${staffToken}` },
         });
         assert(resForbidden.status === 403, 'Staff không được truy cập Dashboard -> Bị từ chối HTTP 403 Forbidden chuẩn xác');
 
-        // 7. Departments CRUD
         console.log('\n[7] Quản lý Phòng ban (Departments):');
         const resGetDepts = await request('/api/departments', {
             headers: { Authorization: `Bearer ${adminToken}` },
@@ -132,21 +126,20 @@ async function runTests() {
             headers: { Authorization: `Bearer ${adminToken}` },
             body: {
                 name: 'Phòng Marketing & Truyền thông',
-                code: 'MKT_TEST',
+                code: `MKT_${ts}`,
                 description: 'Phụ trách chiến dịch truyền thông thương hiệu.',
             },
         });
         assert(resCreateDept.status === 201, 'Tạo phòng ban mới thành công HTTP 201');
         createdDeptId = resCreateDept.body.data._id;
 
-        // 8. Positions CRUD
         console.log('\n[8] Quản lý Chức vụ (Positions):');
         const resCreatePos = await request('/api/positions', {
             method: 'POST',
             headers: { Authorization: `Bearer ${adminToken}` },
             body: {
                 name: 'Chuyên viên Truyền thông (Marketing Lead)',
-                code: 'MKT_LEAD_TEST',
+                code: `POS_${ts}`,
                 baseSalary: 22000000,
                 description: 'Lên kế hoạch và thực thi chiến dịch marketing.',
             },
@@ -154,15 +147,14 @@ async function runTests() {
         assert(resCreatePos.status === 201, 'Tạo chức vụ mới thành công HTTP 201');
         createdPosId = resCreatePos.body.data._id;
 
-        // 9. Employees CRUD
         console.log('\n[9] Quản lý Nhân sự (Employees):');
         const resCreateEmp = await request('/api/employees', {
             method: 'POST',
             headers: { Authorization: `Bearer ${adminToken}` },
             body: {
                 fullName: 'Hoàng Minh Tuấn',
-                email: 'tuan.hoang.test@hr.com',
-                phone: '0988776655',
+                email: `tuan.${ts}@hr.com`,
+                phone: `09${String(ts).slice(-8)}`,
                 gender: 'male',
                 dateOfBirth: '1996-12-05',
                 address: '15 Lê Duẩn, Quận 1, TP.HCM',
@@ -182,21 +174,26 @@ async function runTests() {
         assert(resGetEmp.status === 200, 'Xem chi tiết nhân viên thành công');
         assert(resGetEmp.body.data.departmentId.name === 'Phòng Marketing & Truyền thông', 'Populate phòng ban chuẩn xác');
 
-        // 10. Attendance Flow
         console.log('\n[10] Điểm danh & Chấm công (Attendance):');
         const resMyAtt = await request('/api/attendances/my-attendance', {
             headers: { Authorization: `Bearer ${staffToken}` },
         });
         assert(resMyAtt.status === 200, 'Staff tự xem lịch sử điểm danh của mình thành công');
 
-        const resCheckOut = await request('/api/attendances/check-out', {
+        const resEmpCheckIn = await request('/api/attendances/check-in', {
             method: 'POST',
-            headers: { Authorization: `Bearer ${staffToken}` },
+            headers: { Authorization: `Bearer ${adminToken}` },
+            body: { employeeId: createdEmpId },
         });
-        // Staff EMP003 đã có checkIn sáng nay trong seed, check-out sẽ thành công
-        assert(resCheckOut.status === 200, 'Staff điểm danh ra ca (Check-out) thành công và tính số giờ làm');
+        assert(resEmpCheckIn.status === 200, 'Điểm danh vào ca cho nhân viên mới thành công');
 
-        // 11. Leave Requests Flow
+        const resEmpCheckOut = await request('/api/attendances/check-out', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${adminToken}` },
+            body: { employeeId: createdEmpId },
+        });
+        assert(resEmpCheckOut.status === 200, 'Điểm danh ra ca thành công và tính số giờ làm');
+
         console.log('\n[11] Quản lý Nghỉ phép (Leave Requests):');
         const resCreateLeave = await request('/api/leaves', {
             method: 'POST',
@@ -219,7 +216,6 @@ async function runTests() {
         assert(resApproveLeave.status === 200, 'Admin phê duyệt đơn nghỉ phép thành công');
         assert(resApproveLeave.body.data.status === 'approved', 'Trạng thái đơn đã cập nhật thành approved');
 
-        // 12. Cleanup created test resources
         console.log('\n[12] Dọn dẹp tài nguyên tạo trong bài kiểm thử:');
         await request(`/api/employees/${createdEmpId}?hardDelete=true`, {
             method: 'DELETE',

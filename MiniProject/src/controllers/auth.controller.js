@@ -25,7 +25,6 @@ const register = async (req, res, next) => {
             });
         }
 
-        // Quyền admin/hr chỉ được cấp nếu có admin chỉ định hoặc là tài khoản đầu tiên
         let assignedRole = 'staff';
         if (role && ['admin', 'hr', 'staff'].includes(role)) {
             const userCount = await User.countDocuments();
@@ -125,7 +124,6 @@ const changePassword = async (req, res, next) => {
             });
         }
 
-        // Lấy lại user bao gồm trường password
         const user = await User.findById(req.user._id);
         const isMatch = await user.comparePassword(currentPassword);
         if (!isMatch) {

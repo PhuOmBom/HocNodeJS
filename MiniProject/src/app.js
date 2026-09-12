@@ -29,7 +29,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// Mount Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/departments', require('./routes/department.routes'));
 app.use('/api/positions', require('./routes/position.routes'));

@@ -1,13 +1,11 @@
 const Attendance = require('../models/Attendance');
 const Employee = require('../models/Employee');
 
-// Helper tìm employee theo user hiện tại (thông qua email)
 async function getEmployeeForUser(user) {
     if (!user) return null;
     return await Employee.findOne({ email: user.email });
 }
 
-// Helper lấy đầu ngày theo múi giờ
 function getStartOfDay(d = new Date()) {
     const start = new Date(d);
     start.setHours(0, 0, 0, 0);
@@ -24,7 +22,6 @@ const checkIn = async (req, res, next) => {
     try {
         let employeeId = req.body.employeeId;
 
-        // Nếu là staff tự check-in, tìm qua email tài khoản
         if (!employeeId) {
             const emp = await getEmployeeForUser(req.user);
             if (!emp) {
@@ -39,7 +36,6 @@ const checkIn = async (req, res, next) => {
         const startOfDay = getStartOfDay(now);
         const endOfDay = getEndOfDay(now);
 
-        // Kiểm tra xem hôm nay đã điểm danh vào chưa
         let record = await Attendance.findOne({
             employeeId,
             date: { $gte: startOfDay, $lte: endOfDay },
@@ -52,7 +48,6 @@ const checkIn = async (req, res, next) => {
             });
         }
 
-        // Quy định giờ chuẩn: 08:30 AM. Nếu sau 08:30 là đi muộn ('late')
         const isLate = now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 30);
         const status = isLate ? 'late' : 'present';
 
@@ -118,7 +113,6 @@ const checkOut = async (req, res, next) => {
         }
 
         record.checkOut = now;
-        // Tính số giờ làm việc (giờ)
         const diffMs = record.checkOut - record.checkIn;
         record.workingHours = Math.round((diffMs / (1000 * 60 * 60)) * 10) / 10;
 

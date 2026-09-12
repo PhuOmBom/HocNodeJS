@@ -13,7 +13,6 @@ async function seedData() {
         await connectDatabase();
         console.log('--- Bắt đầu khởi tạo dữ liệu mẫu (Seed Data) ---');
 
-        // 1. Xóa dữ liệu cũ để tránh trùng lặp
         await Promise.all([
             User.deleteMany({}),
             Department.deleteMany({}),
@@ -24,7 +23,6 @@ async function seedData() {
         ]);
         console.log('✓ Đã dọn dẹp dữ liệu cũ thành công.');
 
-        // 2. Tạo Users
         const users = await User.create([
             {
                 fullName: 'Quản trị viên Hệ thống (Admin)',
@@ -50,7 +48,6 @@ async function seedData() {
         ]);
         console.log(`✓ Đã tạo ${users.length} tài khoản người dùng (Admin, HR, Staff). Mật khẩu: password123`);
 
-        // 3. Tạo Phòng ban
         const departments = await Department.create([
             {
                 name: 'Phòng Công nghệ Thông tin',
@@ -79,7 +76,6 @@ async function seedData() {
         ]);
         console.log(`✓ Đã tạo ${departments.length} phòng ban.`);
 
-        // 4. Tạo Chức vụ
         const positions = await Position.create([
             {
                 name: 'Giám đốc Kỹ thuật (CTO)',
@@ -119,7 +115,6 @@ async function seedData() {
         ]);
         console.log(`✓ Đã tạo ${positions.length} chức vụ.`);
 
-        // Map tiện ích
         const itDept = departments.find((d) => d.code === 'IT');
         const hrDept = departments.find((d) => d.code === 'HR');
         const saleDept = departments.find((d) => d.code === 'SALE');
@@ -129,7 +124,6 @@ async function seedData() {
         const hrPos = positions.find((p) => p.code === 'HR_SPEC');
         const salesPos = positions.find((p) => p.code === 'SALES');
 
-        // 5. Tạo Nhân viên (Liên kết email trùng với User để test chấm công)
         const emp1 = await Employee.create({
             employeeCode: 'EMP001',
             fullName: 'Nguyễn Văn An',
@@ -191,7 +185,6 @@ async function seedData() {
 
         console.log('✓ Đã tạo 4 hồ sơ nhân sự mẫu liên kết chức vụ & phòng ban.');
 
-        // 6. Tạo Chấm công mẫu hôm nay
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -204,7 +197,7 @@ async function seedData() {
         checkIn2.setHours(8, 25, 0, 0);
 
         const checkIn3 = new Date();
-        checkIn3.setHours(9, 10, 0, 0); // Đi muộn
+        checkIn3.setHours(9, 10, 0, 0);
 
         await Attendance.create([
             {
@@ -230,7 +223,6 @@ async function seedData() {
         ]);
         console.log('✓ Đã tạo 3 bản ghi điểm danh mẫu hôm nay (2 đúng giờ, 1 đi muộn).');
 
-        // 7. Tạo Đơn xin nghỉ phép mẫu
         const nextWeekStart = new Date();
         nextWeekStart.setDate(nextWeekStart.getDate() + 3);
         const nextWeekEnd = new Date();

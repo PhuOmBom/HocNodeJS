@@ -72,7 +72,6 @@ const getEmployeeById = async (req, res, next) => {
             });
         }
 
-        // Lấy lịch sử chấm công gần nhất và đơn xin nghỉ phép
         const [recentAttendances, recentLeaves] = await Promise.all([
             Attendance.find({ employeeId: employee._id }).sort({ date: -1 }).limit(7),
             Leave.find({ employeeId: employee._id }).sort({ createdAt: -1 }).limit(5),
@@ -115,7 +114,6 @@ const createEmployee = async (req, res, next) => {
             });
         }
 
-        // Kiểm tra phòng ban & chức vụ có tồn tại và đang hoạt động không
         const [dept, pos] = await Promise.all([
             Department.findById(departmentId),
             Position.findById(positionId),
@@ -129,7 +127,6 @@ const createEmployee = async (req, res, next) => {
             if (!mgr) return res.status(400).json({ message: 'Quản lý trực tiếp không tồn tại.' });
         }
 
-        // Tự động sinh mã nhân viên nếu chưa nhập (VD: EMP001, EMP002, ...)
         if (!employeeCode) {
             const count = await Employee.countDocuments();
             employeeCode = `EMP${String(count + 1).padStart(3, '0')}`;
@@ -140,7 +137,6 @@ const createEmployee = async (req, res, next) => {
         const normalizedEmail = email.toLowerCase().trim();
         const trimmedPhone = phone.trim();
 
-        // Kiểm tra trùng lặp mã, email, sđt
         const [existCode, existEmail, existPhone] = await Promise.all([
             Employee.findOne({ employeeCode }),
             Employee.findOne({ email: normalizedEmail }),
@@ -296,7 +292,6 @@ const deleteEmployee = async (req, res, next) => {
             });
         }
 
-        // Mặc định chuyển sang trạng thái đã nghỉ việc (resigned)
         employee.status = 'resigned';
         await employee.save();
 

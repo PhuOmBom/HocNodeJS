@@ -24,7 +24,6 @@ const getAllDepartments = async (req, res, next) => {
             .skip(skip)
             .limit(Number(limit));
 
-        // Đếm số lượng nhân viên thực tế trong từng phòng ban
         const deptIds = departments.map((d) => d._id);
         const employeeCounts = await Employee.aggregate([
             { $match: { departmentId: { $in: deptIds }, status: { $ne: 'resigned' } } },
@@ -163,7 +162,6 @@ const deleteDepartment = async (req, res, next) => {
             });
         }
 
-        // Kiểm tra xem phòng ban có nhân viên trực thuộc đang làm việc không
         const activeEmployeeCount = await Employee.countDocuments({
             departmentId: department._id,
             status: { $in: ['active', 'probation'] },

@@ -144,7 +144,6 @@ const updateLeaveStatus = async (req, res, next) => {
         leave.status = status;
         await leave.save();
 
-        // Nếu duyệt nghỉ, tạo điểm danh trạng thái 'leave' cho các ngày nghỉ
         if (status === 'approved') {
             const cur = new Date(leave.startDate);
             const end = new Date(leave.endDate);
@@ -152,7 +151,6 @@ const updateLeaveStatus = async (req, res, next) => {
             end.setHours(0, 0, 0, 0);
 
             while (cur <= end) {
-                // Không điểm danh vào Chủ nhật (0)
                 if (cur.getDay() !== 0) {
                     await Attendance.findOneAndUpdate(
                         { employeeId: leave.employeeId, date: new Date(cur) },
