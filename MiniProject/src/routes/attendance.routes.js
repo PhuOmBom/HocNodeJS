@@ -3,14 +3,17 @@ const router = express.Router();
 const {
     checkIn,
     checkOut,
-    getAttendances,
+    getAllAttendances,
     getMyAttendance,
+    getAttendanceByEmployee,
 } = require('../controllers/attendance.controller');
-const { verifyAuth, checkRole } = require('../middlewares/auth.middleware');
+const { verifyAuth } = require('../middlewares/auth.middleware');
+const { checkRole } = require('../middlewares/role.middleware');
 
-router.post('/check-in', verifyAuth, checkIn);
-router.post('/check-out', verifyAuth, checkOut);
-router.get('/my-attendance', verifyAuth, getMyAttendance);
-router.get('/', verifyAuth, checkRole('admin', 'hr'), getAttendances);
+router.post('/check-in', verifyAuth, checkRole('admin', 'hr', 'staff'), checkIn);
+router.post('/check-out', verifyAuth, checkRole('admin', 'hr', 'staff'), checkOut);
+router.get('/me', verifyAuth, checkRole('admin', 'hr', 'staff'), getMyAttendance);
+router.get('/employee/:employeeId', verifyAuth, checkRole('admin', 'hr'), getAttendanceByEmployee);
+router.get('/', verifyAuth, checkRole('admin', 'hr'), getAllAttendances);
 
 module.exports = router;

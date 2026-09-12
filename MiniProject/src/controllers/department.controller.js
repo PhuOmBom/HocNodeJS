@@ -3,7 +3,7 @@ const Employee = require('../models/Employee');
 
 const getAllDepartments = async (req, res, next) => {
     try {
-        const { search, status, page = 1, limit = 20 } = req.query;
+        const { status, search } = req.query;
         const query = {};
 
         if (status) {
@@ -17,35 +17,11 @@ const getAllDepartments = async (req, res, next) => {
             ];
         }
 
-        const skip = (Number(page) - 1) * Number(limit);
-        const total = await Department.countDocuments(query);
-        const departments = await Department.find(query)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(Number(limit));
-
-        const deptIds = departments.map((d) => d._id);
-        const employeeCounts = await Employee.aggregate([
-            { $match: { departmentId: { $in: deptIds }, status: { $ne: 'resigned' } } },
-            { $group: { _id: '$departmentId', count: { $sum: 1 } } },
-        ]);
-
-        const countMap = {};
-        employeeCounts.forEach((c) => {
-            countMap[c._id.toString()] = c.count;
-        });
-
-        const dataWithCounts = departments.map((d) => ({
-            ...d.toObject(),
-            totalEmployees: countMap[d._id.toString()] || 0,
-        }));
+        const departments = await Department.find(query).sort({ createdAt: -1 });
 
         res.status(200).json({
-            success: true,
-            total,
-            page: Number(page),
-            totalPages: Math.ceil(total / Number(limit)),
-            data: dataWithCounts,
+            message: 'Lấy danh sách phòng ban thành công',
+            data: departments,
         });
     } catch (error) {
         next(error);
@@ -57,21 +33,13 @@ const getDepartmentById = async (req, res, next) => {
         const department = await Department.findById(req.params.id);
         if (!department) {
             return res.status(404).json({
-                message: 'Không tìm thấy phòng ban.',
+                message: 'Không tìm thấy dữ liệu',
             });
         }
 
-        const employees = await Employee.find({ departmentId: department._id })
-            .populate('positionId', 'name code baseSalary')
-            .sort({ createdAt: -1 });
-
         res.status(200).json({
-            success: true,
-            data: {
-                ...department.toObject(),
-                employees,
-                totalEmployees: employees.length,
-            },
+            message: 'Lấy thông tin phòng ban thành công',
+            data: department,
         });
     } catch (error) {
         next(error);
@@ -82,9 +50,17 @@ const createDepartment = async (req, res, next) => {
     try {
         const { name, code, description, status } = req.body;
 
-        if (!name || !code) {
+        if (!name || !name.trim()) {
             return res.status(400).json({
-                message: 'Tên phòng ban và mã phòng ban là bắt buộc.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Tên phòng ban không được để trống'],
+            });
+        }
+
+        if (!code || !code.trim()) {
+            return res.status(400).json({
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Mã phòng ban không được để trống'],
             });
         }
 
@@ -92,7 +68,8 @@ const createDepartment = async (req, res, next) => {
         const existingDept = await Department.findOne({ code: normalizedCode });
         if (existingDept) {
             return res.status(400).json({
-                message: `Mã phòng ban "${normalizedCode}" đã tồn tại.`,
+                message: 'Dữ liệu không hợp lệ',
+                errors: [`Mã phòng ban "${normalizedCode}" đã tồn tại`],
             });
         }
 
@@ -104,8 +81,7 @@ const createDepartment = async (req, res, next) => {
         });
 
         res.status(201).json({
-            success: true,
-            message: 'Tạo phòng ban thành công.',
+            message: 'Thêm phòng ban thành công',
             data: department,
         });
     } catch (error) {
@@ -120,7 +96,7 @@ const updateDepartment = async (req, res, next) => {
 
         if (!department) {
             return res.status(404).json({
-                message: 'Không tìm thấy phòng ban.',
+                message: 'Không tìm thấy dữ liệu',
             });
         }
 
@@ -130,22 +106,22 @@ const updateDepartment = async (req, res, next) => {
                 const existing = await Department.findOne({ code: normalizedCode, _id: { $ne: department._id } });
                 if (existing) {
                     return res.status(400).json({
-                        message: `Mã phòng ban "${normalizedCode}" đã được sử dụng.`,
+                        message: 'Dữ liệu không hợp lệ',
+                        errors: [`Mã phòng ban "${normalizedCode}" đã được sử dụng`],
                     });
                 }
                 department.code = normalizedCode;
             }
         }
 
-        if (name) department.name = name.trim();
+        if (name !== undefined) department.name = name.trim();
         if (description !== undefined) department.description = description.trim();
-        if (status) department.status = status;
+        if (status !== undefined) department.status = status;
 
         await department.save();
 
         res.status(200).json({
-            success: true,
-            message: 'Cập nhật phòng ban thành công.',
+            message: 'Cập nhật phòng ban thành công',
             data: department,
         });
     } catch (error) {
@@ -158,26 +134,29 @@ const deleteDepartment = async (req, res, next) => {
         const department = await Department.findById(req.params.id);
         if (!department) {
             return res.status(404).json({
-                message: 'Không tìm thấy phòng ban.',
+                message: 'Không tìm thấy dữ liệu',
             });
         }
 
-        const activeEmployeeCount = await Employee.countDocuments({
+        // Nghiệp vụ: Không cho xóa phòng ban nếu vẫn còn nhân viên active
+        const activeEmployees = await Employee.countDocuments({
             departmentId: department._id,
             status: { $in: ['active', 'probation'] },
         });
 
-        if (activeEmployeeCount > 0) {
+        if (activeEmployees > 0) {
             return res.status(400).json({
-                message: `Không thể xóa phòng ban này vì đang có ${activeEmployeeCount} nhân sự đang làm việc. Vui lòng chuyển công tác nhân sự trước hoặc chuyển trạng thái sang "inactive".`,
+                message: `Không thể xóa phòng ban vì vẫn còn ${activeEmployees} nhân viên đang làm việc`,
             });
         }
 
-        await Department.findByIdAndDelete(department._id);
+        // Xóa mềm: cập nhật status thành inactive
+        department.status = 'inactive';
+        await department.save();
 
         res.status(200).json({
-            success: true,
-            message: 'Đã xóa phòng ban thành công.',
+            message: 'Xóa mềm phòng ban thành công',
+            data: department,
         });
     } catch (error) {
         next(error);

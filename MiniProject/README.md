@@ -1,219 +1,185 @@
-# Hệ Thống API Quản Lý Nhân Sự & Chấm Công (HR Management System)
+# BÀI TẬP TỔNG HỢP: HỆ THỐNG REST API QUẢN LÝ NHÂN SỰ (HR MANAGEMENT SYSTEM)
 
-Dự án Backend RESTful API hoàn chỉnh phục vụ bài toán quản lý doanh nghiệp: Nhân sự, Phòng ban, Chức vụ, Điểm danh chấm công, Đơn xin nghỉ phép và Thống kê tổng quan.
+Dự án Backend RESTful API hoàn chỉnh theo đúng đặc tả yêu cầu của [BÀI TẬP TỔNG HỢP](https://hackmd.io/@kb9Gxj4xSGmnr5aPH63w7A/rJrfXd6dfe) bao gồm:
+* **Bài 1**: Authentication, Phân quyền JWT, Quản lý Phòng ban, Quản lý Chức vụ.
+* **Bài 2**: Quản lý Nhân viên (tìm kiếm, lọc, sắp xếp, phân trang), Chấm công (Check-in/Check-out), Đơn nghỉ phép (Gửi, xem, duyệt/từ chối), Xóa mềm dữ liệu.
+* **Bài 3**: Hồ sơ cá nhân (Xem, cập nhật, đổi mật khẩu), Thống kê cơ bản (Tổng quan, theo phòng ban, theo chức vụ), Lọc sinh nhật / thử việc, Xuất danh sách nhân viên (JSON/CSV).
 
 ---
 
 ## 1. Công Nghệ Sử Dụng
 
-- **Runtime & Framework**: Node.js, Express.js (v5)
-- **Database**: MongoDB Atlas / MongoDB Local qua ODM Mongoose (v8)
-- **Bảo mật & Xác thực**: JSON Web Token (`jsonwebtoken`), Mã hóa mật khẩu Salt & Hash (`bcrypt`)
-- **Phân quyền (RBAC)**: Phân quyền theo 3 vai trò: `admin`, `hr`, `staff`
-- **Tiện ích**: `cors`, `morgan`, `dotenv`, `nodemon`
+- **Runtime & Framework**: Node.js, ExpressJS
+- **Cơ sở dữ liệu**: MongoDB qua ODM Mongoose
+- **Xác thực & Mã hóa**: JSON Web Token (`jsonwebtoken`), `bcrypt`
+- **Tiện ích**: `dotenv`, `cors`, `morgan`, `nodemon`
 
 ---
 
-## 2. Hướng Dẫn Cài Đặt & Khởi Chạy
+## 2. Cấu Trúc Thư Mục Chuẩn
+
+```txt
+src/
+  config/
+    db.js
+  controllers/
+    auth.controller.js
+    department.controller.js
+    position.controller.js
+    employee.controller.js
+    attendance.controller.js
+    leave.controller.js
+    profile.controller.js
+    statistic.controller.js
+  middlewares/
+    auth.middleware.js
+    role.middleware.js
+    error.middleware.js
+  models/
+    User.js
+    Department.js
+    Position.js
+    Employee.js
+    Attendance.js
+    Leave.js
+  routes/
+    auth.routes.js
+    department.routes.js
+    position.routes.js
+    employee.routes.js
+    attendance.routes.js
+    leave.routes.js
+    profile.routes.js
+    statistic.routes.js
+  utils/
+    generateToken.js
+    pagination.js
+    exportCsv.js
+  app.js
+  server.js
+.env.example
+package.json
+README.md
+```
+
+---
+
+## 3. Cài Đặt & Khởi Chạy
 
 ### A. Cài đặt thư viện
 ```bash
 npm install
 ```
 
-### B. Cấu hình biến môi trường (`.env`)
-File `.env` được đặt tại thư mục gốc của dự án:
+### B. Biến môi trường (`.env`)
+Tạo file `.env` tại thư mục gốc dự án (tham khảo `.env.example`):
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/miniproject_hr
-JWT_SECRET=super_secret_hr_jwt_key_2026_miniproject
+MONGO_URI=mongodb://localhost:27017/hr_management
+JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=7d
 ```
 
-### C. Khởi tạo dữ liệu mẫu (Seed Data)
-Lệnh tạo sẵn các phòng ban, chức vụ, tài khoản mẫu và chấm công:
+### C. Khởi chạy Server
 ```bash
-npm run seed
-```
-
-### D. Khởi chạy Server
-```bash
-# Chế độ phát triển (Tự reload khi sửa code)
+# Chế độ phát triển (Development với Nodemon)
 npm run dev
 
-# Chạy server thông thường
+# Chế độ Production
 npm start
 ```
 
-### E. Chạy kiểm thử tự động toàn diện (Automated Tests)
+### D. Chạy kiểm thử tự động toàn diện
 ```bash
-npm test
-# hoặc
-npm run test-api
+node test-api.js
 ```
 
 ---
 
-## 3. Danh Sách Tài Khoản Mẫu Có Sẵn
+## 4. Danh Sách Endpoint REST API Đầy Đủ
 
-Sau khi chạy lệnh `npm run seed`, hệ thống đã có sẵn 3 tài khoản với mật khẩu mặc định: **`password123`**:
+### A. Authentication (`/api/auth`)
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Đăng ký tài khoản | Public |
+| `POST` | `/api/auth/login` | Đăng nhập lấy JWT Token | Public |
+| `GET` | `/api/auth/me` | Lấy thông tin user hiện tại | Đã đăng nhập |
 
-| Vai trò (Role) | Email | Mật khẩu | Quyền hạn |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@hr.com` | `password123` | Toàn quyền quản trị hệ thống, phòng ban, chức vụ, nhân sự |
-| **HR** | `hr@hr.com` | `password123` | Quản lý nhân viên, chấm công, xét duyệt đơn xin nghỉ phép |
-| **Staff** | `staff@hr.com` | `password123` | Điểm danh vào/ra ca, nộp đơn xin nghỉ, xem lịch sử cá nhân |
+### B. Hồ Sơ Cá Nhân (`/api/profile`) - Bài 3
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `GET` | `/api/profile` | Xem hồ sơ cá nhân | admin, hr, staff |
+| `PUT` | `/api/profile` | Cập nhật hồ sơ cá nhân | admin, hr, staff |
+| `PATCH` | `/api/profile/change-password` | Đổi mật khẩu | admin, hr, staff |
 
----
+### C. Quản Lý Phòng Ban (`/api/departments`) - Bài 1
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `GET` | `/api/departments` | Lấy danh sách phòng ban | admin, hr, staff |
+| `GET` | `/api/departments/:id` | Lấy chi tiết phòng ban | admin, hr, staff |
+| `POST` | `/api/departments` | Thêm phòng ban | admin, hr |
+| `PUT` | `/api/departments/:id` | Cập nhật phòng ban | admin, hr |
+| `DELETE` | `/api/departments/:id` | Xóa mềm phòng ban (chặn nếu còn nhân viên) | admin |
 
-## 4. Cách Gửi Token Xác Thực
+### D. Quản Lý Chức Vụ (`/api/positions`) - Bài 1
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `GET` | `/api/positions` | Lấy danh sách chức vụ | admin, hr, staff |
+| `GET` | `/api/positions/:id` | Lấy chi tiết chức vụ | admin, hr, staff |
+| `POST` | `/api/positions` | Thêm chức vụ | admin, hr |
+| `PUT` | `/api/positions/:id` | Cập nhật chức vụ | admin, hr |
+| `DELETE` | `/api/positions/:id` | Xóa mềm chức vụ (chặn nếu còn nhân viên) | admin |
 
-Đối với các endpoint yêu cầu đăng nhập, đính kèm Token nhận được từ API login vào HTTP Header:
+### E. Quản Lý Nhân Viên (`/api/employees`) - Bài 2 & Bài 3
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `GET` | `/api/employees` | Danh sách nhân viên (lọc, tìm kiếm, sắp xếp, phân trang) | admin, hr, staff |
+| `GET` | `/api/employees/birthdays` | Nhân viên có sinh nhật trong tháng (`?month=3`) | admin, hr |
+| `GET` | `/api/employees/probation-ending` | Nhân viên sắp hết thử việc (`?days=7`) | admin, hr |
+| `GET` | `/api/employees/export` | Xuất danh sách nhân viên (`?format=json|csv`) | admin, hr |
+| `GET` | `/api/employees/:id` | Xem chi tiết nhân viên (kèm populate) | admin, hr, staff |
+| `POST` | `/api/employees` | Thêm nhân viên | admin, hr |
+| `PUT` | `/api/employees/:id` | Cập nhật nhân viên | admin, hr |
+| `DELETE` | `/api/employees/:id` | Xóa mềm nhân viên (`status: 'resigned'`) | admin |
 
-```http
-Authorization: Bearer <access_token_cua_ban>
-```
+### F. Chấm Công (`/api/attendances`) - Bài 2
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `POST` | `/api/attendances/check-in` | Check-in (1 lần/ngày) | admin, hr, staff |
+| `POST` | `/api/attendances/check-out` | Check-out (tự tính workingHours) | admin, hr, staff |
+| `GET` | `/api/attendances` | Xem toàn bộ dữ liệu chấm công | admin, hr |
+| `GET` | `/api/attendances/me` | Xem chấm công của bản thân | admin, hr, staff |
+| `GET` | `/api/attendances/employee/:employeeId` | Xem chấm công của một nhân viên | admin, hr |
 
----
+### G. Nghỉ Phép (`/api/leaves`) - Bài 2
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `POST` | `/api/leaves` | Gửi đơn nghỉ phép (mặc định pending) | admin, hr, staff |
+| `GET` | `/api/leaves` | Xem toàn bộ đơn nghỉ | admin, hr |
+| `GET` | `/api/leaves/me` | Xem đơn nghỉ của bản thân | admin, hr, staff |
+| `GET` | `/api/leaves/:id` | Xem chi tiết đơn nghỉ | admin, hr, chủ đơn |
+| `PATCH` | `/api/leaves/:id/approve` | Duyệt đơn nghỉ (chỉ khi pending) | admin, hr |
+| `PATCH` | `/api/leaves/:id/reject` | Từ chối đơn nghỉ (chỉ khi pending) | admin, hr |
 
-## 5. Danh Sách Endpoint RESTful API
-
-### A. Xác thực & Tài khoản (`/api/auth`)
-
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Đăng ký tài khoản (mặc định role `staff`) |
-| `POST` | `/api/auth/login` | Public | Đăng nhập lấy JWT Token & thông tin User |
-| `GET` | `/api/auth/me` | Đã đăng nhập | Lấy thông tin hồ sơ tài khoản hiện tại |
-| `PUT` | `/api/auth/change-password` | Đã đăng nhập | Đổi mật khẩu tài khoản |
-
-#### Request body mẫu: Đăng nhập (`POST /api/auth/login`)
-```json
-{
-  "email": "admin@hr.com",
-  "password": "password123"
-}
-```
-
-#### Response mẫu (200 OK):
-```json
-{
-  "success": true,
-  "message": "Đăng nhập thành công.",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
-  "user": {
-    "_id": "6aa447d6d34e2b0012345678",
-    "fullName": "Quản trị viên Hệ thống (Admin)",
-    "email": "admin@hr.com",
-    "role": "admin",
-    "status": "active"
-  }
-}
-```
-
----
-
-### B. Quản lý Phòng ban (`/api/departments`)
-
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/departments` | Đã đăng nhập | Danh sách phòng ban (kèm số lượng nhân viên) |
-| `GET` | `/api/departments/:id` | Đã đăng nhập | Chi tiết phòng ban và danh sách nhân sự |
-| `POST` | `/api/departments` | `admin`, `hr` | Thêm phòng ban mới |
-| `PUT` | `/api/departments/:id` | `admin`, `hr` | Cập nhật thông tin phòng ban |
-| `DELETE` | `/api/departments/:id` | `admin` | Xóa phòng ban (kiểm tra an toàn nhân sự) |
-
----
-
-### C. Quản lý Chức vụ (`/api/positions`)
-
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/positions` | Đã đăng nhập | Danh sách chức vụ và mức lương cơ bản |
-| `GET` | `/api/positions/:id` | Đã đăng nhập | Chi tiết chức vụ và danh sách nhân sự |
-| `POST` | `/api/positions` | `admin`, `hr` | Thêm chức vụ mới |
-| `PUT` | `/api/positions/:id` | `admin`, `hr` | Cập nhật thông tin chức vụ |
-| `DELETE` | `/api/positions/:id` | `admin` | Xóa chức vụ |
+### H. Thống Kê Cơ Bản (`/api/statistics`) - Bài 3
+| Method | Endpoint | Mô tả | Quyền |
+|---|---|---|---|
+| `GET` | `/api/statistics/overview` | Thống kê tổng quan nhân sự | admin, hr |
+| `GET` | `/api/statistics/departments` | Thống kê nhân viên theo phòng ban | admin, hr |
+| `GET` | `/api/statistics/positions` | Thống kê nhân viên theo chức vụ | admin, hr |
 
 ---
 
-### D. Quản lý Hồ sơ Nhân sự (`/api/employees`)
+## 5. Quy Chuẩn Đáp Ứng Nghiệp Vụ
 
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/employees` | Đã đăng nhập | Danh sách nhân viên (hỗ trợ search, filter, pagination) |
-| `GET` | `/api/employees/:id` | Đã đăng nhập | Chi tiết nhân viên, lịch sử chấm công & nghỉ phép |
-| `POST` | `/api/employees` | `admin`, `hr` | Tạo mới nhân viên (tự sinh mã nhân viên nếu để trống) |
-| `PUT` | `/api/employees/:id` | `admin`, `hr` | Cập nhật thông tin hồ sơ nhân viên |
-| `DELETE` | `/api/employees/:id` | `admin` | Đánh dấu nghỉ việc (`resigned`) hoặc xóa vĩnh viễn (`?hardDelete=true`) |
-
-#### Request body mẫu: Thêm nhân viên (`POST /api/employees`)
-```json
-{
-  "fullName": "Trần Quốc Toản",
-  "email": "toan.tran@hr.com",
-  "phone": "0987112233",
-  "gender": "male",
-  "dateOfBirth": "1997-04-12",
-  "address": "123 Hai Bà Trưng, Quận 3, TP.HCM",
-  "departmentId": "6aa447d7d34e2b0012345680",
-  "positionId": "6aa447d7d34e2b0012345685",
-  "salary": 25000000,
-  "status": "probation"
-}
-```
-
----
-
-### E. Điểm danh & Chấm công (`/api/attendances`)
-
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/attendances/check-in` | Đã đăng nhập | Điểm danh vào ca (tự động phân loại đúng giờ/đi muộn sau 08:30) |
-| `POST` | `/api/attendances/check-out` | Đã đăng nhập | Điểm danh ra ca (tự động tính tổng số giờ làm việc) |
-| `GET` | `/api/attendances/my-attendance` | Đã đăng nhập | Xem lịch sử chấm công của chính mình |
-| `GET` | `/api/attendances` | `admin`, `hr` | Xem danh sách chấm công toàn công ty (lọc theo ngày/tháng) |
-
----
-
-### F. Quản lý Nghỉ phép (`/api/leaves`)
-
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/leaves` | Đã đăng nhập | Nộp đơn xin nghỉ phép (`annual`, `sick`, `unpaid`) |
-| `GET` | `/api/leaves/my-leaves` | Đã đăng nhập | Xem danh sách đơn xin nghỉ của cá nhân |
-| `GET` | `/api/leaves` | `admin`, `hr` | Xem danh sách đơn xin nghỉ toàn công ty |
-| `PATCH` | `/api/leaves/:id/status` | `admin`, `hr` | Phê duyệt (`approved`) hoặc từ chối (`rejected`) đơn |
-| `DELETE` | `/api/leaves/:id` | Đã đăng nhập | Hủy đơn xin nghỉ khi còn ở trạng thái `pending` |
-
----
-
-### G. Thống kê Bảng điều khiển (`/api/dashboard`)
-
-| Method | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/dashboard/stats` | `admin`, `hr` | Lấy số liệu tổng quan: nhân sự, phòng ban, đi làm hôm nay, đơn chờ duyệt |
-
-#### Response mẫu: Thống kê Dashboard (`GET /api/dashboard/stats`)
-```json
-{
-  "success": true,
-  "summary": {
-    "employees": {
-      "total": 4,
-      "active": 3,
-      "probation": 1,
-      "resigned": 0
-    },
-    "departments": 4,
-    "positions": 5,
-    "attendanceToday": {
-      "totalCheckedIn": 3,
-      "present": 2,
-      "late": 1,
-      "onLeave": 0
-    },
-    "pendingLeaveRequests": 1
-  }
-}
-```
+1. **Bảo mật & Phân quyền**:
+   - `auth.middleware.js`: Kiểm tra Bearer token trong header `Authorization`.
+   - `role.middleware.js`: Trả về lỗi 403 đúng mẫu: `{"message": "Bạn không có quyền thực hiện chức năng này"}` khi sai quyền.
+2. **Xử lý lỗi tập trung**:
+   - `error.middleware.js`: Chuẩn hóa lỗi `ValidationError` trả về status 400 kèm mảng `errors: [...]`.
+3. **Chính sách dữ liệu**:
+   - Không xóa cứng dữ liệu (`hard delete`), mọi thao tác xóa đều là xóa mềm (`soft delete`).
+   - Phòng ban và chức vụ chỉ cho phép xóa mềm khi không còn nhân viên nào liên kết.
+4. **Chấm công & Nghỉ phép**:
+   - Một nhân viên chỉ check-in 1 lần/ngày; chỉ được check-out sau khi đã check-in; tự động tính `workingHours`.
+   - Đơn nghỉ phép khi được duyệt (`approved`) sẽ tự động cập nhật bản ghi chấm công `status: 'leave'` cho các ngày tương ứng.

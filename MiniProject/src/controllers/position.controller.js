@@ -3,10 +3,13 @@ const Employee = require('../models/Employee');
 
 const getAllPositions = async (req, res, next) => {
     try {
-        const { search, status, page = 1, limit = 20 } = req.query;
+        const { status, search } = req.query;
         const query = {};
 
-        if (status) query.status = status;
+        if (status) {
+            query.status = status;
+        }
+
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -14,18 +17,10 @@ const getAllPositions = async (req, res, next) => {
             ];
         }
 
-        const skip = (Number(page) - 1) * Number(limit);
-        const total = await Position.countDocuments(query);
-        const positions = await Position.find(query)
-            .sort({ baseSalary: -1 })
-            .skip(skip)
-            .limit(Number(limit));
+        const positions = await Position.find(query).sort({ createdAt: -1 });
 
         res.status(200).json({
-            success: true,
-            total,
-            page: Number(page),
-            totalPages: Math.ceil(total / Number(limit)),
+            message: 'Lấy danh sách chức vụ thành công',
             data: positions,
         });
     } catch (error) {
@@ -38,21 +33,13 @@ const getPositionById = async (req, res, next) => {
         const position = await Position.findById(req.params.id);
         if (!position) {
             return res.status(404).json({
-                message: 'Không tìm thấy chức vụ.',
+                message: 'Không tìm thấy dữ liệu',
             });
         }
 
-        const employees = await Employee.find({ positionId: position._id })
-            .populate('departmentId', 'name code')
-            .sort({ createdAt: -1 });
-
         res.status(200).json({
-            success: true,
-            data: {
-                ...position.toObject(),
-                employees,
-                totalEmployees: employees.length,
-            },
+            message: 'Lấy thông tin chức vụ thành công',
+            data: position,
         });
     } catch (error) {
         next(error);
@@ -63,23 +50,33 @@ const createPosition = async (req, res, next) => {
     try {
         const { name, code, description, baseSalary, status } = req.body;
 
-        if (!name || !code || baseSalary === undefined) {
+        if (!name || !name.trim()) {
             return res.status(400).json({
-                message: 'Tên chức vụ, mã chức vụ và mức lương cơ bản là bắt buộc.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Tên chức vụ không được để trống'],
             });
         }
 
-        if (Number(baseSalary) < 0) {
+        if (!code || !code.trim()) {
             return res.status(400).json({
-                message: 'Lương cơ bản không được âm.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Mã chức vụ không được để trống'],
+            });
+        }
+
+        if (baseSalary === undefined || baseSalary === null || isNaN(baseSalary) || Number(baseSalary) < 0) {
+            return res.status(400).json({
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Lương phải lớn hơn hoặc bằng 0'],
             });
         }
 
         const normalizedCode = code.toUpperCase().trim();
-        const existing = await Position.findOne({ code: normalizedCode });
-        if (existing) {
+        const existingPos = await Position.findOne({ code: normalizedCode });
+        if (existingPos) {
             return res.status(400).json({
-                message: `Mã chức vụ "${normalizedCode}" đã tồn tại.`,
+                message: 'Dữ liệu không hợp lệ',
+                errors: [`Mã chức vụ "${normalizedCode}" đã tồn tại`],
             });
         }
 
@@ -92,8 +89,7 @@ const createPosition = async (req, res, next) => {
         });
 
         res.status(201).json({
-            success: true,
-            message: 'Tạo chức vụ thành công.',
+            message: 'Thêm chức vụ thành công',
             data: position,
         });
     } catch (error) {
@@ -108,7 +104,7 @@ const updatePosition = async (req, res, next) => {
 
         if (!position) {
             return res.status(404).json({
-                message: 'Không tìm thấy chức vụ.',
+                message: 'Không tìm thấy dữ liệu',
             });
         }
 
@@ -118,28 +114,31 @@ const updatePosition = async (req, res, next) => {
                 const existing = await Position.findOne({ code: normalizedCode, _id: { $ne: position._id } });
                 if (existing) {
                     return res.status(400).json({
-                        message: `Mã chức vụ "${normalizedCode}" đã được sử dụng.`,
+                        message: 'Dữ liệu không hợp lệ',
+                        errors: [`Mã chức vụ "${normalizedCode}" đã được sử dụng`],
                     });
                 }
                 position.code = normalizedCode;
             }
         }
 
-        if (name) position.name = name.trim();
+        if (name !== undefined) position.name = name.trim();
         if (description !== undefined) position.description = description.trim();
         if (baseSalary !== undefined) {
-            if (Number(baseSalary) < 0) {
-                return res.status(400).json({ message: 'Lương cơ bản không được âm.' });
+            if (isNaN(baseSalary) || Number(baseSalary) < 0) {
+                return res.status(400).json({
+                    message: 'Dữ liệu không hợp lệ',
+                    errors: ['Lương phải lớn hơn hoặc bằng 0'],
+                });
             }
             position.baseSalary = Number(baseSalary);
         }
-        if (status) position.status = status;
+        if (status !== undefined) position.status = status;
 
         await position.save();
 
         res.status(200).json({
-            success: true,
-            message: 'Cập nhật chức vụ thành công.',
+            message: 'Cập nhật chức vụ thành công',
             data: position,
         });
     } catch (error) {
@@ -152,10 +151,11 @@ const deletePosition = async (req, res, next) => {
         const position = await Position.findById(req.params.id);
         if (!position) {
             return res.status(404).json({
-                message: 'Không tìm thấy chức vụ.',
+                message: 'Không tìm thấy dữ liệu',
             });
         }
 
+        // Nghiệp vụ: Không cho xóa chức vụ nếu vẫn còn nhân viên đang sử dụng
         const activeEmployees = await Employee.countDocuments({
             positionId: position._id,
             status: { $in: ['active', 'probation'] },
@@ -163,15 +163,17 @@ const deletePosition = async (req, res, next) => {
 
         if (activeEmployees > 0) {
             return res.status(400).json({
-                message: `Không thể xóa chức vụ này vì có ${activeEmployees} nhân sự đang nắm giữ. Vui lòng chuyển đổi chức vụ cho nhân sự trước.`,
+                message: `Không thể xóa chức vụ vì vẫn còn ${activeEmployees} nhân viên đang sử dụng`,
             });
         }
 
-        await Position.findByIdAndDelete(position._id);
+        // Xóa mềm: cập nhật status thành inactive
+        position.status = 'inactive';
+        await position.save();
 
         res.status(200).json({
-            success: true,
-            message: 'Đã xóa chức vụ thành công.',
+            message: 'Xóa mềm chức vụ thành công',
+            data: position,
         });
     } catch (error) {
         next(error);

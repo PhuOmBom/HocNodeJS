@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 
-const { Schema } = mongoose;
-
-const userSchema = new Schema(
+const attendanceSchema = new mongoose.Schema(
     {
         employeeId: {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Employee',
+            required: [true, 'employeeId là bắt buộc'],
         },
         date: {
             type: Date,
+            required: [true, 'Ngày điểm danh là bắt buộc'],
         },
         checkIn: {
             type: Date,
@@ -19,20 +19,22 @@ const userSchema = new Schema(
         },
         workingHours: {
             type: Number,
+            default: 0,
         },
         status: {
             type: String,
             enum: {
                 values: ['present', 'late', 'absent', 'leave'],
-                message: '{VALUE} ko phai la trang thai hop le',
+                message: '{VALUE} không phải trạng thái hợp lệ (chỉ nhận: present, late, absent, leave)',
             },
-        }
+            default: 'present',
+        },
     },
     {
         timestamps: true,
     }
 );
 
-const Attendance = mongoose.model('Attendance', userSchema);
+const Attendance = mongoose.model('Attendance', attendanceSchema);
 
 module.exports = Attendance;

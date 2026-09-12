@@ -1,18 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const {
-    createLeaveRequest,
-    getAllLeaveRequests,
-    getMyLeaveRequests,
-    updateLeaveStatus,
-    cancelLeaveRequest,
+    createLeave,
+    getAllLeaves,
+    getMyLeaves,
+    getLeaveById,
+    approveLeave,
+    rejectLeave,
 } = require('../controllers/leave.controller');
-const { verifyAuth, checkRole } = require('../middlewares/auth.middleware');
+const { verifyAuth } = require('../middlewares/auth.middleware');
+const { checkRole } = require('../middlewares/role.middleware');
 
-router.post('/', verifyAuth, createLeaveRequest);
-router.get('/my-leaves', verifyAuth, getMyLeaveRequests);
-router.get('/', verifyAuth, checkRole('admin', 'hr'), getAllLeaveRequests);
-router.patch('/:id/status', verifyAuth, checkRole('admin', 'hr'), updateLeaveStatus);
-router.delete('/:id', verifyAuth, cancelLeaveRequest);
+router.post('/', verifyAuth, checkRole('admin', 'hr', 'staff'), createLeave);
+router.get('/me', verifyAuth, checkRole('admin', 'hr', 'staff'), getMyLeaves);
+router.get('/', verifyAuth, checkRole('admin', 'hr'), getAllLeaves);
+
+router.get('/:id', verifyAuth, checkRole('admin', 'hr', 'staff'), getLeaveById);
+router.patch('/:id/approve', verifyAuth, checkRole('admin', 'hr'), approveLeave);
+router.patch('/:id/reject', verifyAuth, checkRole('admin', 'hr'), rejectLeave);
 
 module.exports = router;

@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema(
+const departmentSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true,
+            required: [true, 'Tên phòng ban không được để trống'],
             trim: true,
         },
         code: {
             type: String,
-            required: true,
+            required: [true, 'Mã phòng ban không được để trống'],
             unique: true,
             trim: true,
             uppercase: true,
@@ -17,12 +17,13 @@ const userSchema = new mongoose.Schema(
         description: {
             type: String,
             trim: true,
+            default: '',
         },
         status: {
             type: String,
             enum: {
                 values: ['active', 'inactive'],
-                message: '{VALUE} ko phai trang thai hop le'
+                message: '{VALUE} không phải trạng thái hợp lệ (chỉ nhận: active, inactive)',
             },
             default: 'active',
         },
@@ -32,6 +33,6 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-const Department = mongoose.model('Department', userSchema);
+const Department = mongoose.model('Department', departmentSchema);
 
 module.exports = Department;

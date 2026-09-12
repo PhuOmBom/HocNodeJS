@@ -7,14 +7,13 @@ const {
     updatePosition,
     deletePosition,
 } = require('../controllers/position.controller');
-const { verifyAuth, checkRole } = require('../middlewares/auth.middleware');
+const { verifyAuth } = require('../middlewares/auth.middleware');
+const { checkRole } = require('../middlewares/role.middleware');
 
-router.get('/', verifyAuth, getAllPositions);
-router.get('/:id', verifyAuth, getPositionById);
-
+router.get('/', verifyAuth, checkRole('admin', 'hr', 'staff'), getAllPositions);
+router.get('/:id', verifyAuth, checkRole('admin', 'hr', 'staff'), getPositionById);
 router.post('/', verifyAuth, checkRole('admin', 'hr'), createPosition);
 router.put('/:id', verifyAuth, checkRole('admin', 'hr'), updatePosition);
-
 router.delete('/:id', verifyAuth, checkRole('admin'), deletePosition);
 
 module.exports = router;

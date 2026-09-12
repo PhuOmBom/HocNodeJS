@@ -1,48 +1,47 @@
 const mongoose = require('mongoose');
 
-const { Schema } = mongoose;
-
-const userSchema = new Schema(
+const leaveSchema = new mongoose.Schema(
     {
         employeeId: {
-            type: Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Employee',
-            required: true,
+            required: [true, 'employeeId là bắt buộc'],
         },
         leaveType: {
             type: String,
+            required: [true, 'Loại nghỉ phép là bắt buộc'],
             enum: {
                 values: ['annual', 'sick', 'unpaid'],
-                message: '{VALUE} ko phai la loai nghi phep hop le'
+                message: '{VALUE} không phải loại nghỉ phép hợp lệ (chỉ nhận: annual, sick, unpaid)',
             },
         },
         startDate: {
             type: Date,
-            required: true,
+            required: [true, 'Ngày bắt đầu là bắt buộc'],
         },
         endDate: {
             type: Date,
-            required: true,
+            required: [true, 'Ngày kết thúc là bắt buộc'],
         },
         reason: {
             type: String,
-            required: true,
+            required: [true, 'Lý do nghỉ phép không được để trống'],
             trim: true,
         },
         status: {
             type: String,
             enum: {
                 values: ['pending', 'approved', 'rejected'],
-                message: '{VALUE} ko phai la trang thai hop le'
+                message: '{VALUE} không phải trạng thái hợp lệ (chỉ nhận: pending, approved, rejected)',
             },
             default: 'pending',
-        }
+        },
     },
     {
         timestamps: true,
     }
 );
 
-const Leave = mongoose.model('Leave', userSchema);
+const Leave = mongoose.model('Leave', leaveSchema);
 
 module.exports = Leave;

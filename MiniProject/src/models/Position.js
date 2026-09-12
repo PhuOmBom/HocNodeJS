@@ -1,16 +1,15 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema(
+const positionSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true,
+            required: [true, 'Tên chức vụ không được để trống'],
             trim: true,
         },
         code: {
             type: String,
-            required: true,
+            required: [true, 'Mã chức vụ không được để trống'],
             unique: true,
             trim: true,
             uppercase: true,
@@ -18,17 +17,18 @@ const userSchema = new mongoose.Schema(
         description: {
             type: String,
             trim: true,
+            default: '',
         },
         baseSalary: {
             type: Number,
-            required: true,
-            min: [0, 'Có định trả lương ko ae?']
+            required: [true, 'Lương cơ bản là bắt buộc'],
+            min: [0, 'Lương phải lớn hơn hoặc bằng 0'],
         },
         status: {
             type: String,
             enum: {
                 values: ['active', 'inactive'],
-                message: '{VALUE} ko phai trang thai hop le'
+                message: '{VALUE} không phải trạng thái hợp lệ (chỉ nhận: active, inactive)',
             },
             default: 'active',
         },
@@ -38,6 +38,6 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-const Position = mongoose.model('Position', userSchema);
+const Position = mongoose.model('Position', positionSchema);
 
 module.exports = Position;

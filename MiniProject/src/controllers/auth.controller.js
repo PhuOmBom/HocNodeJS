@@ -3,17 +3,26 @@ const { generateToken } = require('../utils/generateToken');
 
 const register = async (req, res, next) => {
     try {
-        const { fullName, email, password, role } = req.body;
+        const { fullName, email, password, role, status } = req.body;
 
-        if (!fullName || !email || !password) {
+        if (!fullName || !fullName.trim()) {
             return res.status(400).json({
-                message: 'Họ tên, email và mật khẩu là bắt buộc.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Họ và tên không được để trống'],
             });
         }
 
-        if (password.length < 6) {
+        if (!email || !email.trim()) {
             return res.status(400).json({
-                message: 'Mật khẩu phải có ít nhất 6 ký tự.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Email là bắt buộc'],
+            });
+        }
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Mật khẩu phải có tối thiểu 6 ký tự'],
             });
         }
 
@@ -21,16 +30,14 @@ const register = async (req, res, next) => {
         const existingUser = await User.findOne({ email: normalizedEmail });
         if (existingUser) {
             return res.status(400).json({
-                message: 'Email này đã được đăng ký tài khoản.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Email đã tồn tại trong hệ thống'],
             });
         }
 
         let assignedRole = 'staff';
         if (role && ['admin', 'hr', 'staff'].includes(role)) {
-            const userCount = await User.countDocuments();
-            if (userCount === 0 || (req.user && req.user.role === 'admin')) {
-                assignedRole = role;
-            }
+            assignedRole = role;
         }
 
         const user = await User.create({
@@ -38,15 +45,12 @@ const register = async (req, res, next) => {
             email: normalizedEmail,
             password,
             role: assignedRole,
+            status: status || 'active',
         });
 
-        const token = generateToken({ id: user._id, role: user.role });
-
         res.status(201).json({
-            success: true,
-            message: 'Đăng ký tài khoản thành công.',
-            token,
-            user,
+            message: 'Đăng ký tài khoản thành công',
+            data: user,
         });
     } catch (error) {
         next(error);
@@ -59,7 +63,8 @@ const login = async (req, res, next) => {
 
         if (!email || !password) {
             return res.status(400).json({
-                message: 'Vui lòng nhập đầy đủ email và mật khẩu.',
+                message: 'Dữ liệu không hợp lệ',
+                errors: ['Vui lòng nhập đầy đủ email và mật khẩu'],
             });
         }
 
@@ -67,28 +72,27 @@ const login = async (req, res, next) => {
         const user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(401).json({
-                message: 'Email hoặc mật khẩu không chính xác.',
+                message: 'Email hoặc mật khẩu không chính xác',
             });
         }
 
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({
-                message: 'Email hoặc mật khẩu không chính xác.',
+                message: 'Email hoặc mật khẩu không chính xác',
             });
         }
 
         if (user.status !== 'active') {
             return res.status(403).json({
-                message: 'Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động.',
+                message: 'Tài khoản đã bị khóa hoặc ngừng hoạt động',
             });
         }
 
         const token = generateToken({ id: user._id, role: user.role });
 
         res.status(200).json({
-            success: true,
-            message: 'Đăng nhập thành công.',
+            message: 'Đăng nhập thành công',
             token,
             user,
         });
@@ -100,44 +104,8 @@ const login = async (req, res, next) => {
 const getMe = async (req, res, next) => {
     try {
         res.status(200).json({
-            success: true,
+            message: 'Lấy thông tin người dùng thành công',
             user: req.user,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-const changePassword = async (req, res, next) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({
-                message: 'Vui lòng nhập mật khẩu hiện tại và mật khẩu mới.',
-            });
-        }
-
-        if (newPassword.length < 6) {
-            return res.status(400).json({
-                message: 'Mật khẩu mới phải có ít nhất 6 ký tự.',
-            });
-        }
-
-        const user = await User.findById(req.user._id);
-        const isMatch = await user.comparePassword(currentPassword);
-        if (!isMatch) {
-            return res.status(400).json({
-                message: 'Mật khẩu hiện tại không đúng.',
-            });
-        }
-
-        user.password = newPassword;
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: 'Đổi mật khẩu thành công.',
         });
     } catch (error) {
         next(error);
@@ -148,5 +116,4 @@ module.exports = {
     register,
     login,
     getMe,
-    changePassword,
 };
